@@ -1,10 +1,14 @@
-name: Frontend CI
+name: FRONTEND TEST
 
 on:
   pull_request:
     branches:
       - main
       - develop
+
+      
+permissions:
+  contents: read
 
 jobs:
   frontend:
