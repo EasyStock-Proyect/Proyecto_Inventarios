@@ -179,3 +179,248 @@ Antes de aprobar un Pull Request, GitHub Actions ejecuta automáticamente:
 Solo si las verificaciones son exitosas y el Pull Request es aprobado, los cambios pueden fusionarse con la rama protegida.
 
 ---
+
+# Configuración del Backend
+
+Ingresar a la carpeta del backend:
+
+```bash
+cd backend
+```
+
+Instalar dependencias:
+
+```bash
+npm install
+```
+
+---
+
+## Crear la base de datos
+
+Crear una base de datos en MySQL:
+
+```sql
+CREATE DATABASE inventarios_db;
+```
+
+---
+
+## Variables de entorno
+
+Crear el archivo:
+
+```text
+backend/.env
+```
+
+Agregar la cadena de conexión:
+
+```env
+DATABASE_URL="mysql://USUARIO:CONTRASEÑA@localhost:3306/inventarios_db"
+```
+
+Ejemplo:
+
+```env
+DATABASE_URL="mysql://root:admin@localhost:3306/inventarios_db"
+```
+
+---
+
+# Prisma ORM
+
+El backend utiliza **Prisma ORM** para el modelado, versionado y administración de la base de datos.
+
+---
+
+## Generar el cliente de Prisma
+
+```bash
+npx prisma generate
+```
+
+---
+
+## Ejecutar migraciones
+
+Aplicar las migraciones existentes:
+
+```bash
+npx prisma migrate dev
+```
+
+Crear una nueva migración:
+
+```bash
+npx prisma migrate dev --name nombre_de_la_migracion
+```
+
+Ejemplo:
+
+```bash
+npx prisma migrate dev --name add_product_barcode
+```
+
+---
+
+## Ejecutar los datos de prueba (Seed)
+
+```bash
+npx prisma db seed
+```
+
+Este comando inserta datos iniciales para facilitar el desarrollo y las pruebas.
+
+---
+
+## Reiniciar la base de datos
+
+En caso de necesitar reconstruir completamente la base de datos:
+
+```bash
+npx prisma migrate reset
+```
+
+Este comando:
+
+- Elimina la base de datos.
+- Ejecuta nuevamente todas las migraciones.
+- Ejecuta automáticamente el Seed.
+
+---
+
+## Prisma Studio
+
+Para visualizar y administrar la base de datos desde una interfaz gráfica:
+
+```bash
+npx prisma studio
+```
+
+---
+
+# Modelo de Base de Datos
+
+Actualmente el sistema cuenta con las siguientes entidades:
+
+- User
+- Category
+- Product
+- Sale
+- SaleItem
+- StockAlert
+
+El modelo se encuentra definido en:
+
+```text
+backend/prisma/schema.prisma
+```
+
+---
+
+# Migraciones
+
+Todas las modificaciones del esquema quedan registradas automáticamente en:
+
+```text
+backend/prisma/migrations
+```
+
+Esto garantiza que cualquier desarrollador pueda recrear exactamente la misma base de datos ejecutando las migraciones.
+
+---
+
+# Seeds
+
+Los datos de prueba se encuentran en:
+
+```text
+backend/prisma/seed.js
+```
+
+Estos permiten poblar automáticamente la base de datos para realizar pruebas y desarrollo.
+
+---
+
+# Variables de entorno
+
+## Frontend
+
+```text
+frontend/.env.example
+```
+
+Crear:
+
+```text
+frontend/.env
+```
+
+---
+
+## Backend
+
+```text
+backend/.env
+```
+
+Debe contener:
+
+```env
+DATABASE_URL="mysql://USUARIO:CONTRASEÑA@localhost:3306/inventarios_db"
+```
+
+---
+
+# Estructura del proyecto
+
+```text
+Proyecto_Inventarios/
+│
+├── .github/
+│   └── workflows/
+│       └── ci.yml
+│
+├── frontend/
+│   ├── src/
+│   ├── public/
+│   ├── package.json
+│   ├── .env.example
+│   └── ...
+│
+├── backend/
+│   ├── prisma/
+│   │   ├── migrations/
+│   │   ├── schema.prisma
+│   │   └── seed.js
+│   │
+│   ├── prisma.config.ts
+│   ├── package.json
+│   ├── .env
+│   └── ...
+│
+├── README.md
+│
+└── .gitignore
+```
+
+---
+
+# Funcionalidades implementadas del Backend
+
+- Configuración inicial de **Prisma ORM**.
+- Conexión a **MySQL** mediante variables de entorno.
+- Esquema de base de datos versionado mediante migraciones.
+- Modelado de las entidades:
+  - User
+  - Category
+  - Product
+  - Sale
+  - SaleItem
+  - StockAlert
+- Datos de prueba mediante **Prisma Seed**.
+- Administración visual de la base de datos con **Prisma Studio**.
+- Reconstrucción de la base de datos mediante migraciones (`prisma migrate reset`).
+
+---
