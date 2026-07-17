@@ -10,11 +10,9 @@
     "migrate": "npx prisma migrate dev",
     "studio": "npx prisma studio"
   },
-
   "prisma": {
     "seed": "node prisma/seed.js"
   },
-
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -24,7 +22,7 @@
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
+    "dotenv": "^17.4.2",
     "prisma": "^6.19.3"
   }
-  
 }

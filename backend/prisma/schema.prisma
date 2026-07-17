@@ -14,55 +14,90 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  name      String
-  email     String   @unique
-  password  String
-  role      String
-  sales Sale[]
+  id            String            @id @default(uuid()) @db.Char(36)
+  email         String            @unique @db.VarChar(255)
+  passwordHash  String            @db.VarChar(255)
+  businessName  String            @db.VarChar(255)
+  businessType  String            @db.VarChar(100)
+  createdAt     DateTime          @default(now())
+  categories    Category[]
+  products      Product[]
+  sales         Sale[]
+  stockMovements StockMovement[]
+  stockAlerts   StockAlert[]
+  @@map("user")
 }
 
 model Category {
-  id          Int       @id @default(autoincrement())
-  name        String
-  description String?
-  products Product[]
+  id        String    @id @default(uuid()) @db.Char(36)
+  userId    String    @db.Char(36)
+  name      String    @db.VarChar(255)
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  products   Product[]
+  @@map("category")
 }
 
 model Product {
-  id          Int      @id @default(autoincrement())
-  name        String
-  description String?
-  price       Float
-  stock       Int
-  barcode     String?
-  categoryId Int
-  category   Category @relation(fields: [categoryId], references: [id])
-  saleItems SaleItem[]
-  stockAlerts StockAlert[]
+  id             String      @id @default(uuid()) @db.Char(36)
+  userId         String      @db.Char(36)
+  categoryId     String      @db.Char(36)
+  name           String      @db.VarChar(255)
+  sku            String      @db.VarChar(100)
+  price          Decimal     @db.Decimal(10,2)
+  stockCurrent   Int
+  stockMinimum   Int
+  deletedAt      DateTime?
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category       Category        @relation(fields: [categoryId], references: [id])
+  saleItems      SaleItem[]
+  stockMovements StockMovement[]
+  stockAlerts    StockAlert[]
+  @@map("product")
 }
 
 model Sale {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  userId Int
-  user   User @relation(fields: [userId], references: [id])
-  items SaleItem[]
+  id         String      @id @default(uuid()) @db.Char(36)
+  userId     String      @db.Char(36)
+  total      Decimal     @db.Decimal(10,2)
+  createdAt  DateTime    @default(now())
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items       SaleItem[]
+  @@map("sale")
 }
 
 model SaleItem {
-  id Int @id @default(autoincrement())
-  quantity Int
-  price    Float
-  saleId Int
-  sale   Sale @relation(fields: [saleId], references: [id])
-  productId Int
-  product   Product @relation(fields: [productId], references: [id])
+  id          String      @id @default(uuid()) @db.Char(36)
+  saleId      String      @db.Char(36)
+  productId   String      @db.Char(36)
+  quantity    Int
+  unitPrice   Decimal     @db.Decimal(10,2)
+  subtotal    Decimal     @db.Decimal(10,2)
+  sale         Sale        @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  product      Product     @relation(fields: [productId], references: [id])
+  @@map("sale_item")
+}
+
+model StockMovement {
+  id          String      @id @default(uuid()) @db.Char(36)
+  productId   String      @db.Char(36)
+  userId      String      @db.Char(36)
+  quantity    Int
+  reason      String      @db.VarChar(255)
+  notes       String?     @db.Text
+  createdAt   DateTime    @default(now())
+  product      Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@map("stock_movement")
 }
 
 model StockAlert {
-  id Int @id @default(autoincrement())
-  minStock Int
-  productId Int
-  product Product @relation(fields: [productId], references: [id])
+  id           String      @id @default(uuid()) @db.Char(36)
+  productId    String      @db.Char(36)
+  userId       String      @db.Char(36)
+  stockAlert   Int
+  isRead       Boolean     @default(false)
+  createdAt    DateTime    @default(now())
+  product       Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@map("stock_alert")
 }
