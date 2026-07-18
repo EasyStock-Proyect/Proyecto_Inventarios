@@ -1,0 +1,38 @@
+.tabs{
+    display:flex;
+    width:100%;
+    border:1px solid #2E7D32;
+    border-radius:30px;
+    overflow:hidden;
+    margin-bottom:30px;
+}
+
+.tab{
+    flex:1;
+    padding:15px;
+    border:none;
+    background:white;
+    color:#2E7D32;
+    font-size:16px;
+    font-weight:600;
+    cursor:pointer;
+    transition:all .25s ease;
+}
+
+/* Activo */
+.tab.active{
+    background:#2E7D32;
+    color:white;
+}
+
+/* Activo + hover */
+.tab.active:hover{
+    background:white;
+    color:#2E7D32;
+}
+
+/* Inactivo + hover */
+.tab:not(.active):hover{
+    background:#2E7D32;
+    color:white;
+}
