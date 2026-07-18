@@ -1,0 +1,35 @@
+.logo{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 100%;
+    margin-bottom: 1px;
+}
+
+.logo-circle{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 5px;
+}
+
+.logo-image{
+    width: 90px;
+    height: 90px;
+    object-fit: contain;
+}
+
+.logo-title{
+    margin: 0;
+    font-size: 42px;
+    font-weight: bold;
+    color: #000;
+}
+
+.logo-subtitle{
+    margin-top: 1px;
+    color: #555;
+    font-size: 18px;
+}
