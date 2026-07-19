@@ -6,6 +6,7 @@ import close from "../../assets/icons/candado-cerrado.webp"
 function PasswordInput() {
     const [showPassword, setShowPassword] = useState(false);
     return (
+        <>
         <div className="password-input">
             <input
                 type={showPassword ? "text" : "password"}
@@ -23,6 +24,7 @@ function PasswordInput() {
                 />
             </button>
         </div>
+        </>
     );
 }
 export default PasswordInput;

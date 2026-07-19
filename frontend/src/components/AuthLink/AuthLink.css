@@ -1,0 +1,18 @@
+.auth-link{
+    margin-top: 1px;
+    text-align: center;
+    font-size: 15px;
+    color: #444;
+}
+
+.auth-link span{
+    color: #2E7D32;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color .2s;
+}
+
+.auth-link span:hover{
+    color: #256428;
+    text-decoration: underline;
+}
