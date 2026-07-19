@@ -1,10 +1,12 @@
 import "./Login.css";
+
 import Logo from "../../components/Logo/Logo";
 import Input from "../../components/Input/Input";
 import Button from "../../components/Button/Button";
 import Tabs from "../../components/Tabs/Tabs";
 import PasswordInput from "../../components/PasswordInputs/PasswordInput";
-
+import Footer from "../../components/Footer/Footer";
+import AuthLink from "../../components/AuthLink/AuthLink";
 function Login() {
     return (
         <div className="login-container">
@@ -20,13 +22,21 @@ function Login() {
                         type="email"
                         placeholder="correo electronico"
                     />
-                    <PasswordInput/>
+                    <PasswordInput />
+                    <div className="password-menssage">
+                        Minimo 6 cracteres
+                    </div>
                     <div className="button-container">
                         <Button>
                             Iniciar sesión
                         </Button>
                     </div>
+                    <AuthLink
+                        text="¿No tienes cuenta?"
+                        linkText="Crear cuenta"
+                    />
                 </div>
+                <Footer />
             </div>
         </div>
     );

@@ -13,7 +13,7 @@ function Logo() {
                 />
             </div>
             <h1 className="logo-title">
-                EASYSTOCK
+                EasyStock
             </h1>
             <p className="logo-subtitle">
                 Gestión inteligente para tu negocio

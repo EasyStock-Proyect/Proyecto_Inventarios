@@ -1,0 +1,37 @@
+.register-container{
+    width:100%;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+    background: linear-gradient(135deg, #7ebe7e 0%, #a9d9a9 50%, #e1f2f2 100%);
+}
+
+.register-wrapper{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:20px;
+    width:100%;
+    max-width:440px;
+}
+
+.register-card{
+    width:100%;
+    background:white;
+    padding:30px;
+    border-radius:20px;
+    display:flex;
+    flex-direction:column;
+    gap:20px;
+    box-shadow:0 4px 12px rgba(0,0,0,.05);
+}
+
+.password-menssage{
+    margin-top: -2rem;
+    margin-bottom: -0.5rem;
+    margin-left: 10px;
+    font-size: 15px;
+    color: #666;
+}

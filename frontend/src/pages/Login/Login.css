@@ -1,24 +1,19 @@
-/* 1. RESET GLOBAL: Elimina los márgenes del navegador que causan el borde blanco y el scroll */
 html, body, #root {
+    width: 100%;
+    min-height: 100%;
     margin: 0;
     padding: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden; /* Corta cualquier scroll a nivel de página */
 }
 
 .login-container {
-    width: 100vw;
-    height: 100vh; 
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: linear-gradient(135deg, #61e861 0%, #94c294 50%, #e1f2f2 100%); /* Tu color intacto */
-    padding: 20px;
-    box-sizing: border-box; 
-    position: fixed; /* Asegura que se clave en toda la pantalla sin moverse */
-    top: 0;
-    left: 0;
+    width:100%;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+    box-sizing:border-box;
+    background: linear-gradient(135deg, #7ebe7e 0%, #a9d9a9 50%, #e1f2f2 100%);
 }
 
 .login-wrapper {
@@ -43,11 +38,7 @@ html, body, #root {
     box-sizing: border-box; 
 }
 
-/* 
-   CORRECCIÓN PARA INPUTS: 
-   Apuntamos explícitamente a los elementos input y selectores internos de tus componentes 
-   para forzarlos a respetar el ancho de la tarjeta sin desbordarse.
-*/
+
 .login-card input,
 .login-card div,
 .login-card .button-container {
@@ -60,4 +51,12 @@ html, body, #root {
     display: flex;
     justify-content: center;
     margin-top: 10px;
+}
+
+.password-menssage{
+    margin-top: -2rem;
+    margin-bottom: 1px;
+    margin-left: 10px;
+    font-size: 15px;
+    color: #666;
 }
