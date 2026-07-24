@@ -35,3 +35,10 @@
     font-size: 15px;
     color: #666;
 }
+
+.error-message{
+    color:#d32f2f;
+    font-size:14px;
+    margin-top:-10px;
+    margin-bottom:11px;
+}
