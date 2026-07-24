@@ -40,11 +40,11 @@ html, body, #root {
 
 
 .login-card input,
-.login-card div,
-.login-card .button-container {
-    width: 100% !important;
+.password-input,
+.button-container{
+    width: 100%;
     max-width: 100%;
-    box-sizing: border-box !important;
+    box-sizing: border-box;
 }
 
 .button-container {
@@ -53,10 +53,46 @@ html, body, #root {
     margin-top: 10px;
 }
 
+.error-message{
+    color: #d32f2f;
+    font-size: 14px;
+    margin-top: 6px;
+    margin-bottom: 4px;
+}
+
 .password-menssage{
-    margin-top: -2rem;
-    margin-bottom: 1px;
-    margin-left: 10px;
-    font-size: 15px;
-    color: #666;
+    display: block;
+    width: 100%;
+    font-size: 14px;
+    color: #333;
+    margin-top: 8px;
+    margin-bottom: 4px;
+    text-align: left;
+}
+
+.server-error{
+    width: 100%;
+    margin-top: 12px;
+    padding: 12px;
+
+    background: #FDECEC;
+    border: 1px solid #F5C2C7;
+    border-radius: 8px;
+
+    color: #B42318;
+    font-size: 14px;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+.success-message{
+    width: 100%;
+    margin-top: 12px;
+    padding: 12px;
+    background: #E8F5E9;
+    border: 1px solid #81C784;
+    border-radius: 8px;
+    color: #2E7D32;
+    text-align: center;
+    box-sizing: border-box;
 }

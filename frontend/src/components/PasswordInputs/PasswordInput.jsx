@@ -3,7 +3,7 @@ import "./PasswordInput.css"
 import open from "../../assets/icons/candado-abierto.webp"
 import close from "../../assets/icons/candado-cerrado.webp"
 
-function PasswordInput() {
+function PasswordInput({value, onChange}) {
     const [showPassword, setShowPassword] = useState(false);
     return (
         <>
@@ -11,6 +11,8 @@ function PasswordInput() {
             <input
                 type={showPassword ? "text" : "password"}
                 placeholder="Contraseña"
+                value={value}
+                onChange={onChange}
             />
             <button
                 type="button"
