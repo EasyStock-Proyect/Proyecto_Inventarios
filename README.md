@@ -618,4 +618,149 @@ backend/
 │   └── app.js
 │
 └── index.js
+---
+
+# Autenticación y Seguridad
+
+El sistema implementa autenticación basada en **JSON Web Token (JWT)** para proteger las rutas privadas de la API y garantizar que únicamente los usuarios autenticados puedan acceder a los recursos protegidos.
+
+## Inicio de sesión
+
+Al autenticarse correctamente mediante:
+
+```http
+POST /auth/login
 ```
+
+el servidor genera y retorna:
+
+- Access Token
+- Refresh Token
+
+El **Access Token** debe enviarse en todas las solicitudes a rutas protegidas utilizando el encabezado:
+
+```http
+Authorization: Bearer <accessToken>
+```
+
+---
+
+## Middleware de autenticación
+
+Se implementó un middleware encargado de validar el JWT antes de permitir el acceso a las rutas protegidas.
+
+El middleware realiza las siguientes validaciones:
+
+- Verifica que exista el encabezado `Authorization`.
+- Comprueba que el formato sea `Bearer <token>`.
+- Valida la firma del JWT.
+- Verifica que el token no haya expirado.
+- Extrae la información del usuario autenticado y la almacena en:
+
+```javascript
+req.user
+```
+
+Si el token no es válido o no existe, la API responde:
+
+```http
+401 Unauthorized
+```
+
+---
+
+## Handler Global de Errores
+
+Se implementó un middleware global para centralizar el manejo de errores de toda la aplicación.
+
+Entre sus funciones se encuentran:
+
+- Capturar errores no controlados.
+- Retornar respuestas JSON consistentes.
+- Evitar exponer información sensible del servidor.
+- Registrar información útil para depuración.
+
+Las respuestas siguen la estructura:
+
+```json
+{
+    "message": "Descripción del error"
+}
+```
+
+---
+
+## Registro de errores
+
+Cada error registrado incluye información como:
+
+- Timestamp
+- Método HTTP
+- Ruta solicitada
+- UserId (cuando el usuario está autenticado)
+- Mensaje del error
+
+Ejemplo:
+
+```text
+{
+    timestamp: "2026-07-24T22:10:15.234Z",
+    route: "/products",
+    method: "GET",
+    userId: "1168cb5c-060d-4268-a2a3-77980e371114",
+    message: "Token inválido."
+}
+```
+
+---
+
+## Rutas protegidas
+
+Las rutas privadas utilizan el middleware de autenticación para validar el JWT antes de ejecutar la lógica del controlador.
+
+Ejemplo:
+
+```javascript
+router.get("/", authMiddleware, controller.getAll);
+```
+
+Si el usuario no envía un token válido, la solicitud es rechazada con código **401 Unauthorized**.
+
+---
+
+## Archivos implementados
+
+La funcionalidad de autenticación y manejo de errores se encuentra distribuida en los siguientes archivos:
+
+```text
+src/
+├── middlewares/
+│   ├── auth.middleware.js
+│   └── error.middleware.js
+│
+├── utils/
+│   └── jwt.js
+│
+├── controllers/
+│   └── auth.controller.js
+│
+├── services/
+│   └── auth.service.js
+│
+└── app.js
+```
+
+---
+
+## Funcionalidades implementadas
+
+- Autenticación mediante JWT.
+- Generación de Access Token y Refresh Token.
+- Middleware de validación de JWT.
+- Protección de rutas privadas.
+- Manejo global de errores.
+- Respuestas JSON estructuradas.
+- Registro de errores con información de auditoría.
+- Protección contra exposición de información interna del servidor.
+
+---
