@@ -1,6 +1,10 @@
 const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
 const prisma = require("../config/prisma");
+
+const {
+    generateAccessToken,
+    generateRefreshToken,
+} = require("../utils/jwt")
 
 
 async function register(data) {
@@ -64,28 +68,8 @@ async function login(data) {
         throw new Error("Credenciales inválidas");
     }
 
-
-    const accessToken = jwt.sign(
-        {
-            id:user.id,
-            email:user.email
-        },
-        process.env.JWT_SECRET,
-        {
-            expiresIn:"1h"
-        }
-    );
-
-
-    const refreshToken = jwt.sign(
-        {
-            id:user.id
-        },
-        process.env.JWT_SECRET,
-        {
-            expiresIn:"7d"
-        }
-    );
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
 
 
     return {
