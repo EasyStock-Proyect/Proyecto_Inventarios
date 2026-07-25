@@ -72,8 +72,9 @@ function Login() {
 
             localStorage.setItem(
                 "accessToken",
-                response.data.accesToken
-            )
+                response.accessToken
+            );
+
             navigate("/dashboard")
 
         } catch (error) {
