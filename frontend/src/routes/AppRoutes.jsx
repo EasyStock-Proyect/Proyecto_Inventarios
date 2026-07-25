@@ -21,7 +21,7 @@ function AppRouter(){
                     element={<Register/>}
                 />
                 <Route
-                    path="dashboard"
+                    path="/dashboard"
                     element={<Dashboard/>}
                 />
             </Routes>
