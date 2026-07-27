@@ -28,6 +28,7 @@ function Login() {
     });
 
     const validacionForm = () => {
+
         const newErrors = {
             email: "",
             password: ""
@@ -75,7 +76,12 @@ function Login() {
                 response.accessToken
             );
 
-            navigate("/dashboard")
+            localStorage.setItem(
+                "refreshToken",
+                response.refreshToken
+            );
+
+            navigate("/dashboard");
 
         } catch (error) {
 
@@ -85,7 +91,7 @@ function Login() {
                 "Error al iniciar sesión."
             )
         }
-    };
+    }
 
     return (
         <div className="login-container">

@@ -1,13 +1,16 @@
-import "./Button.css"
+import "./Button.css";
 
-function Button(props){
-    return(
-        <button className="button"
-        disabled={props.disabled}
-        onClick={props.onClick}>
-            {props.children}
+function Button({ children, disabled, onClick, type = "button" }) {
+    return (
+        <button
+            className="button"
+            type={type}
+            disabled={disabled}
+            onClick={onClick}
+        >
+            {children}
         </button>
-    )
+    );
 }
 
 export default Button;

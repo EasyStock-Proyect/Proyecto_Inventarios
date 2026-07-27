@@ -1,10 +1,12 @@
-import "./Logo.css"
+import "./Logo.css";
 
-import logo from "../../assets/logo/logo_3.webp"
+import logo from "../../assets/logo/logo_3.webp";
 
-function Logo() {
+function Logo({ compact = false }) {
+
     return (
         <div className="logo">
+
             <div className="logo-circle">
                 <img
                     src={logo}
@@ -12,12 +14,19 @@ function Logo() {
                     className="logo-image"
                 />
             </div>
-            <h1 className="logo-title">
-                EasyStock
-            </h1>
-            <p className="logo-subtitle">
-                Gestión inteligente para tu negocio
-            </p>
+
+            {!compact && (
+                <>
+                    <h1 className="logo-title">
+                        EasyStock
+                    </h1>
+
+                    <p className="logo-subtitle">
+                        Gestión inteligente para tu negocio
+                    </p>
+                </>
+            )}
+
         </div>
     );
 }
