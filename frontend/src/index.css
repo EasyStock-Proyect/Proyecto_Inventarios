@@ -18,3 +18,41 @@
     box-sizing: border-box;
     font-family: "Inter", sans-serif;
 }
+
+:root{
+
+    --primary:#1b5e20;
+
+    --background:#f2f4ee;
+
+    --foreground:#1a1c19;
+
+    --card:#ffffff;
+
+    --secondary:#d5e8ce;
+
+    --muted:#ecf2ea;
+
+    --muted-foreground:#424940;
+
+    --accent:#a5d6a7;
+
+    --accent-foreground:#002107;
+
+    --destructive:#ba1a1a;
+
+    --border:rgba(0,0,0,0.1);
+
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    background:var(--background);
+    color:var(--foreground);
+    font-family:Arial, Helvetica, sans-serif;
+}
