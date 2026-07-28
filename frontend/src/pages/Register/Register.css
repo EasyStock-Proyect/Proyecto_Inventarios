@@ -5,7 +5,15 @@
     justify-content:center;
     align-items:center;
     padding:20px;
-    background: linear-gradient(135deg, #7ebe7e 0%, #a9d9a9 50%, #e1f2f2 100%);
+    box-sizing: border-box;
+    background: linear-gradient(
+        135deg,
+        var(--secondary) 0%,
+        var(--muted) 50%,
+        var(--background) 100% 
+    );
+
+
 }
 
 .register-wrapper{
@@ -15,16 +23,19 @@
     gap:20px;
     width:100%;
     max-width:440px;
+    box-sizing: border-box;
 }
 
 .register-card{
     width:100%;
-    background:white;
+    background: var(--card);
     padding:30px;
     border-radius:20px;
     display:flex;
     flex-direction:column;
     gap:20px;
+    box-sizing: border-box;
+    border: 1px solid var(--border);
     box-shadow:0 4px 12px rgba(0,0,0,.05);
 }
 
@@ -33,11 +44,11 @@
     margin-bottom: -0.5rem;
     margin-left: 10px;
     font-size: 15px;
-    color: #666;
+    color: var(--muted-foreground);
 }
 
 .error-message{
-    color:#d32f2f;
+    color: var(--destructive);
     font-size:14px;
     margin-top:-10px;
     margin-bottom:11px;
