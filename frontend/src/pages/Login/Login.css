@@ -28,7 +28,7 @@ html, body, #root {
 
 .login-card {
     width: 100%;
-    background: white;
+    background:var(--card);
     padding: 30px;
     border-radius: 20px;
     display: flex;
@@ -54,7 +54,7 @@ html, body, #root {
 }
 
 .error-message{
-    color: #d32f2f;
+    color:var(--destructive);
     font-size: 14px;
     margin-top: 6px;
     margin-bottom: 4px;

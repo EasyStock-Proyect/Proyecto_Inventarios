@@ -1,6 +1,7 @@
 import "./Sidebar.css";
 import { NavLink, useNavigate } from "react-router-dom";
 import Logo from "../Logo/Logo";
+import { useState } from "react";
 
 import {
     FiHome,
@@ -16,9 +17,13 @@ import {
 
 function Sidebar() {
 
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+
     const navigate = useNavigate();
 
     const handleLogout = () => {
+
+        setIsMenuOpen(false);
 
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
@@ -29,16 +34,32 @@ function Sidebar() {
 
     return (
 
-        <aside className="sidebar">
+    <>
+        <button
+            className="menu-toggle"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+        >
+            {isMenuOpen ? <FiX /> : <FiMenu />}
+        </button>
 
-            <div className="sidebar-logo">
-                <Logo compact={true} />
-            </div>
+        {isMenuOpen && (
+            <div
+                className="sidebar-overlay"
+                onClick={() => setIsMenuOpen(false)}
+            />
+        )}
+
+        <aside className={`sidebar ${isMenuOpen ? "open" : ""}`}>
+
+                <div className="sidebar-logo">
+                    <Logo compact={true} />
+                </div>
 
             <nav className="sidebar-menu">
 
                 <NavLink
                     to="/dashboard"
+                    onClick={() => setIsMenuOpen(false)}
                     className={({ isActive }) =>
                         isActive ? "menu-item active" : "menu-item"
                     }
@@ -49,6 +70,7 @@ function Sidebar() {
 
                 <NavLink
                     to="/inventario"
+                    onClick={() => setIsMenuOpen(false)}
                     className={({ isActive }) =>
                         isActive ? "menu-item active" : "menu-item"
                     }
@@ -59,6 +81,7 @@ function Sidebar() {
 
                 <NavLink
                     to="/ventas"
+                    onClick={() => setIsMenuOpen(false)}
                     className={({ isActive }) =>
                         isActive ? "menu-item active" : "menu-item"
                     }
@@ -69,6 +92,7 @@ function Sidebar() {
 
                 <NavLink
                     to="/prediccion"
+                    onClick={() => setIsMenuOpen(false)}
                     className={({ isActive }) =>
                         isActive ? "menu-item active" : "menu-item"
                     }
@@ -79,6 +103,7 @@ function Sidebar() {
 
                 <NavLink
                     to="/ajustes"
+                    onClick={() => setIsMenuOpen(false)}
                     className={({ isActive }) =>
                         isActive ? "menu-item active" : "menu-item"
                     }
@@ -103,6 +128,8 @@ function Sidebar() {
             </button>
 
         </aside>
+
+    </>
 
     );
 
