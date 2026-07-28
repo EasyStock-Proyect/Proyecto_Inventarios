@@ -592,16 +592,24 @@ frontend/
     │   ├── Footer/
     │   ├── Input/
     │   ├── Logo/
+    │   ├── Sidebar/
     │   ├── PasswordInput/
     │   └── Tabs/
     │
     ├── pages/
+    │   ├── Dashboard/
+    │   ├── Inventory/
     │   ├── Login/
+    │   ├── Prediction/
     │   ├── Register/
-    │   └── Dashboard/
+    │   ├── Sales/
+    │   └── Settings/
     │
-    └── routes/
-        └── AppRoutes.jsx
+    ├── routes/
+    │   ├── AppRouter.jsx
+    │   └── ProtectedRoute.jsx
+    └──layouts/
+        └── MainLayout.jsx
 
 backend/
 ├── src/
@@ -764,3 +772,18 @@ src/
 - Protección contra exposición de información interna del servidor.
 
 ---
+
+# Navegación de la aplicación
+
+Se implementó el layout base de la aplicación para las secciones privadas del sistema.
+
+## Características
+
+- Sidebar persistente para la navegación.
+- Navegación entre Dashboard, Inventario, Ventas, Predicción y Ajustes.
+- Resaltado visual de la ruta activa.
+- Protección de rutas mediante autenticación.
+- Cierre de sesión desde el menú lateral.
+- Sidebar responsive.
+- Menú hamburguesa para dispositivos móviles.
+- Cierre automático del menú al navegar o cerrar sesión.
