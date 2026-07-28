@@ -1,0 +1,10 @@
+.prediction-container{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:80vh;
+}
+
+.prediction-card{
+    text-align:center;
+}

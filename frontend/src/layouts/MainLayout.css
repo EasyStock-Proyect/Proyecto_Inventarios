@@ -1,0 +1,29 @@
+.layout{
+
+    display:flex;
+
+    min-height:100vh;
+
+    background:var(--background);
+
+}
+
+.layout-content{
+
+    flex:1;
+
+    padding:30px;
+
+    overflow-y:auto;
+
+}
+
+@media (max-width:768px){
+
+    .layout-content{
+
+        padding:80px 20px 20px;
+
+    }
+
+}
