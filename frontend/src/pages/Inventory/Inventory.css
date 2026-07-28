@@ -1,0 +1,10 @@
+.inventory-container{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:80vh;
+}
+
+.inventory-card{
+    text-align:center;
+}

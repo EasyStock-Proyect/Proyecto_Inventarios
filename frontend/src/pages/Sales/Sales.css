@@ -1,0 +1,10 @@
+.sales-container{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:80vh;
+}
+
+.sales-card{
+    text-align:center;
+}
