@@ -1,13 +1,32 @@
 const express = require("express");
-const authMiddleware = require("../middlewares/auth.middleware");
-
 const router = express.Router();
 
-router.get("/", authMiddleware, (req, res) => {
-    res.json({
-        message: "Ruta protegida funcionando.",
-        user: req.user
-    });
-});
+const productController = require("../controllers/product.controller");
+const authMiddleware = require("../middlewares/auth.middleware");
+
+
+router.post(
+    "/", 
+    authMiddleware.verifyToken,
+    productController.createProduct
+);
+
+router.get(
+    "/",
+    authMiddleware.verifyToken,
+    productController.getAllProducts
+);
+
+router.put(
+    "/:id",
+    authMiddleware.verifyToken,
+    productController.updateProduct
+);
+
+router.delete(
+    "/:id",
+    authMiddleware.verifyToken,
+    productController.deleteProduct
+);
 
 module.exports = router;
