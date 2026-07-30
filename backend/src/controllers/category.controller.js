@@ -23,7 +23,10 @@ async function createCategory(req, res) {
             req.body
         );
 
-        res.status(201).json(category);
+        res.status(201).json({
+            message: "Categoría creada exitosamente",
+            category
+        });
 
     } catch (error) {
 
@@ -45,7 +48,10 @@ async function updateCategory(req, res) {
             req.body
         );
 
-        res.json(category);
+        res.json({
+            message: "Categoría actualizada exitosamente",
+            category
+        });
 
     } catch (error) {
 
@@ -66,7 +72,10 @@ async function deleteCategory(req, res) {
             req.params.id
         );
 
-        res.json(result);
+        res.json({
+            message: "Categoría eliminada exitosamente",
+            category: result
+        });
 
     } catch (error) {
 
