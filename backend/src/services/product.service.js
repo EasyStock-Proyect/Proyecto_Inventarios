@@ -274,9 +274,161 @@ async function deleteProduct(userId, productId) {
 
 }
 
+async function adjustStock(userId, productId, data) {
+
+    const  { quantity, reason, notes } = data;
+
+    const product = await prisma.product.findFirst({
+
+        where: {
+            id: productId,
+            userId,
+            deletedAt: null
+        }
+    
+    });
+
+    if (!product) {
+        throw new Error("Producto no encontrado.");
+    }
+
+    if (quantity === undefined) {
+        throw new Error("La cantidad es obligatoria.");
+    }
+
+    if (typeof quantity !== "number") {
+        throw new Error("La cantidad debe ser un número.");
+    }
+
+    if (quantity === 0) {
+        throw new Error("La cantidad debe ser diferente de cero.");
+    }
+
+    if (!reason) {
+        throw new Error("La razón del ajuste es obligatoria.");
+    }
+    
+    const validReasons = [
+        "ENTRY",
+        "LOSS",
+        "CORRECTION"
+    ];
+
+    if (!validReasons.includes(reason)) {
+        throw new Error("Razón de ajuste inválida.");
+    }
+    
+    const newStock = product.stockCurrent + quantity;
+
+    if (newStock < 0) {
+        
+        const error = new Error(
+            "El ajuste de stock no puede resultar en un stock negativo."
+        );
+
+        error.status = 422;
+
+        throw error;
+
+    }
+
+    const adjustment = await prisma.$transaction(async (tx) => {
+
+        await tx.product.update({
+
+            where: {
+                id: productId
+            },
+
+            data: {
+                stockCurrent: newStock
+            }
+
+        });
+
+        const movement = await tx.stockMovement.create({
+
+            data: {
+                productId,
+                userId,
+                quantity,
+                reason,
+                notes
+            }
+        });
+
+        return movement;
+
+    });
+
+    return adjustment;
+
+}
+
+async function getStockAdjustments(userId, productId, query) {
+
+    const product = await prisma.product.findFirst({
+
+        where: {
+            id: productId,
+            userId,
+            deletedAt: null
+        }
+    
+    });
+
+    if (!product) {
+        throw new Error("Producto no encontrado.");
+    }
+
+    const page = Number(query.page) || 1;
+    const limit = Number(query.limit) || 10;
+
+    const skip = (page - 1) * limit;
+
+    const adjustments = await prisma.stockMovement.findMany({
+
+        where: {
+            productId
+        },
+
+        skip,
+        take: limit,
+
+        orderBy: {
+            createdAt: "desc"
+        }
+
+    });
+
+    const total = await prisma.stockMovement.count({
+
+        where: {
+            productId
+        }
+
+    });
+
+    return {
+
+        data: adjustments,
+
+        pagination: {
+            page,
+            limit,
+            total,
+            totalPages: Math.ceil(total / limit)
+        }
+
+    };
+
+}
+
 module.exports = {
     createProduct,
     getProducts,
     updateProduct,
-    deleteProduct
+    deleteProduct,
+    adjustStock,
+    getStockAdjustments
 };
