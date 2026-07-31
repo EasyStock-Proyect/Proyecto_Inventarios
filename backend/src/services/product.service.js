@@ -1,0 +1,282 @@
+const prisma = require ("../config/prisma");
+
+async function createProduct(userId, data) {
+
+    const {
+        name,
+        sku,
+        categoryId,
+        price,
+        stockCurrent,
+        stockMinimum
+    } = data;
+
+    if (
+        !name ||
+        !sku ||
+        !categoryId ||
+        price === undefined ||
+        stockCurrent === undefined ||
+        stockMinimum === undefined
+    ) {
+        throw new Error("Todos los campos son obligatorios.");
+    }
+
+    if (!name.trim()) {
+        throw new Error("El nombre del producto es obligatorio.");
+    }
+
+    if (!sku.trim()) {
+        throw new Error("El SKU del producto es obligatorio.");
+    }
+
+    const category = await prisma.category.findFirst({
+
+        where: {
+            id: categoryId,
+            userId
+        }
+
+    });
+
+    if (!category) {
+        throw new Error("Categoría no encontrada.");
+    }
+
+    const existingProduct = await prisma.product.findFirst({
+
+        where: {
+            userId,
+            sku
+        }
+    
+    });
+
+    if (existingProduct) {
+        throw new Error("Ya existe un producto con ese SKU.");
+    }
+
+    const product = await prisma.product.create({
+
+        data: {
+            userId,
+            categoryId,
+            name: name.trim(),
+            sku: sku.trim(),
+            price,
+            stockCurrent,
+            stockMinimum
+        }
+    });
+
+    return product;
+
+}
+
+async function getProducts(userId, query) {
+
+    const page = Number(query.page) || 1;
+    const limit = Number(query.limit) || 10;
+    
+    const search = query.search || "";
+    const categoryId = query.categoryId || null;
+
+    const where = {
+        userId,
+        deletedAt: null,
+    };
+
+    if (search) {
+
+        where.name = {
+            contains: search,
+        };
+
+    }
+
+    if (categoryId) {
+
+        where.categoryId = categoryId;  
+
+    }
+
+    const products = await prisma.product.findMany({
+
+        where,
+
+        skip: (page - 1) * limit,
+
+        take: limit,
+
+        orderBy: {
+            name: "asc"
+        },
+
+        include: {
+            category: {
+                select: {
+                    id: true,
+                    name: true
+                }
+            }
+        }
+
+    
+    });
+
+    const total = await prisma.product.count({
+        where
+    });
+
+    return {
+        data: products,
+        pagination: {
+            page,
+            limit,
+            total,
+            totalPages: Math.ceil(total / limit)
+        }
+    };
+
+}
+
+async function updateProduct(userId, productId, data) {
+
+    const product = await prisma.product.findFirst({
+
+        where: {
+            id: productId,
+            userId,
+            deletedAt: null
+        }
+
+    });
+
+    if (!product) {
+        throw new Error("Producto no encontrado.");
+    }
+
+    const updateData = {};
+
+    if (data.name !== undefined) {
+
+        if (!data.name.trim()) {
+            throw new Error("El nombre del producto es obligatorio.");
+        }
+
+        updateData.name = data.name.trim();
+
+    }
+
+    if (data.sku !== undefined) {
+
+        if (!data.sku.trim()) {
+            throw new Error("El SKU del producto es obligatorio.");
+        }
+
+        const existingProduct = await prisma.product.findFirst({
+
+            where: {
+                userId,
+                sku: data.sku.trim(),
+
+                NOT: {
+                    id: productId
+                }
+            }
+
+        });
+
+        if (existingProduct) {
+            throw new Error("Ya existe un producto con ese SKU.");
+        }
+
+        updateData.sku = data.sku.trim();
+
+    }
+
+    
+
+    if (data.categoryId !== undefined) {
+
+        const category = await prisma.category.findFirst({
+
+            where: {
+                id: data.categoryId,
+                userId
+            }
+        
+        });
+    
+        if (!category) {
+            throw new Error("Categoría no encontrada.");
+        }
+
+        updateData.categoryId = data.categoryId;
+
+    }
+
+    if (data.price !== undefined) {
+        updateData.price = data.price;
+    }
+
+    if (data.stockCurrent !== undefined) {
+        updateData.stockCurrent = data.stockCurrent;
+    }
+
+    if (data.stockMinimum !== undefined) {
+        updateData.stockMinimum = data.stockMinimum;
+    }
+
+    const updatedProduct = await prisma.product.update({
+
+        where: {
+            id: productId
+        },
+
+        data: updateData
+
+    });
+
+    return updatedProduct;
+
+}
+
+async function deleteProduct(userId, productId) {
+
+    const product = await prisma.product.findFirst({
+
+        where: {
+            id: productId,
+            userId,
+            deletedAt: null
+        }
+
+    });
+
+    if (!product) {
+        throw new Error("Producto no encontrado.");
+    }
+
+    const deletedProduct = await prisma.product.update({
+
+        where: {
+            id: productId
+        },
+
+        data: {
+            deletedAt: new Date()
+        }
+
+    });
+
+    return deletedProduct;
+
+}
+
+module.exports = {
+    createProduct,
+    getProducts,
+    updateProduct,
+    deleteProduct
+};

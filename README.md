@@ -16,11 +16,14 @@ Proyecto académico para el desarrollo de un sistema inteligente de gestión de 
 - ESLint
 - Vitest
 
-### Backend *(En desarrollo)*
+### Backend
 
 - Node.js
 - Express
 - MySQL
+- Prisma ORM
+- JWT
+- bcrypt
 
 ### Control de versiones
 
@@ -422,12 +425,60 @@ Proyecto_Inventarios/
 - Datos de prueba mediante **Prisma Seed**.
 - Administración visual de la base de datos con **Prisma Studio**.
 - Reconstrucción de la base de datos mediante migraciones (`prisma migrate reset`).
+- API REST para gestión de categorías.
+- API REST para gestión de productos.
+- Validación de categorías asociadas a productos.
+- Eliminación lógica de productos mediante campo `deletedAt`.
+- Paginación y filtros en consulta de productos.
 
 ---
 
 # Módulo de Autenticación
 
 Se implementó el sistema de autenticación del proyecto mediante una arquitectura cliente-servidor, permitiendo el registro e inicio de sesión de usuarios.
+
+---
+
+# Módulo de Categorías
+
+Se implementó el CRUD de categorías para permitir a los comerciantes organizar sus productos por diferentes tipos, como bebidas, papelería o aseo.
+
+## Funcionalidades
+
+- Creación de categorías.
+- Consulta de categorías.
+- Actualización de categorías.
+- Eliminación de categorías.
+- Validación de nombres duplicados por comerciante.
+- Límite máximo de 50 categorías por usuario.
+- Protección mediante autenticación JWT.
+
+## Reglas de negocio
+
+- Cada categoría pertenece únicamente a un comerciante.
+- No se permite crear categorías con nombres repetidos dentro del mismo negocio.
+- Una categoría con productos asociados no puede ser eliminada.
+
+---
+
+
+# Módulo de Productos
+
+Se implementó la gestión completa de productos mediante API REST, permitiendo administrar el catálogo del comerciante y mantener actualizado el inventario.
+
+## Funcionalidades
+
+- Creación de productos.
+- Listado de productos.
+- Actualización parcial de productos.
+- Eliminación lógica mediante `deletedAt`.
+- Asociación con categorías.
+- Validación de SKU único.
+- Búsqueda por nombre.
+- Filtro por categoría.
+- Paginación de resultados.
+- Protección mediante JWT.
+
 
 ---
 
