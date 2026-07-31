@@ -7,25 +7,25 @@ const authMiddleware = require("../middlewares/auth.middleware");
 
 router.post(
     "/", 
-    authMiddleware.verifyToken,
+    authMiddleware,
     productController.createProduct
 );
 
 router.get(
     "/",
-    authMiddleware.verifyToken,
-    productController.getAllProducts
+    authMiddleware,
+    productController.getProducts
 );
 
 router.put(
     "/:id",
-    authMiddleware.verifyToken,
+    authMiddleware,
     productController.updateProduct
 );
 
 router.delete(
     "/:id",
-    authMiddleware.verifyToken,
+    authMiddleware,
     productController.deleteProduct
 );
 
