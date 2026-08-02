@@ -88,6 +88,7 @@ function ProductTable() {
                 search,
                 categoryId
             });
+            
 
             setProducts(response.data);
             setPagination(response.pagination);
