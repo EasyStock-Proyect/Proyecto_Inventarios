@@ -29,4 +29,16 @@ router.delete(
     productController.deleteProduct
 );
 
+router.post(
+    "/:id/adjustments",
+    authMiddleware,
+    productController.adjustStock
+);
+
+router.get(
+    "/:id/adjustments",
+    authMiddleware,
+    productController.getStockAdjustments
+);
+
 module.exports = router;
