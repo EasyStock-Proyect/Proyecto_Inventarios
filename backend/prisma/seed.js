@@ -1,16 +1,18 @@
 const { PrismaClient } = require("@prisma/client");
+const { hashPassword } = require("../src/utils/password");
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log("Iniciando Seed...");
 
-  // USUARIO
+  const passwordHash = await hashPassword("12345678");
 
+  // USUARIO
   const admin = await prisma.user.create({
     data: {
       email: "admin@inventarios.com",
-      passwordHash: "12345678",
+      passwordHash,
       businessName: "Tech Store",
       businessType: "Tecnología",
     },
@@ -37,6 +39,7 @@ async function main() {
       userId: admin.id,
     },
   });
+
   // PRODUCTOS
   const mouse = await prisma.product.create({
     data: {
@@ -97,6 +100,7 @@ async function main() {
       stockMinimum: 5,
     },
   });
+
   // VENTA
   const venta = await prisma.sale.create({
     data: {
@@ -104,8 +108,8 @@ async function main() {
       total: 360000,
     },
   });
-  // DETALLE DE VENTA
 
+  // DETALLE DE VENTA
   await prisma.saleItem.createMany({
     data: [
       {
@@ -126,7 +130,6 @@ async function main() {
   });
 
   // MOVIMIENTOS DE INVENTARIO
-
   await prisma.stockMovement.createMany({
     data: [
       {
@@ -166,8 +169,8 @@ async function main() {
       },
     ],
   });
-  // ALERTAS DE STOCK
 
+  // ALERTAS DE STOCK
   await prisma.stockAlert.createMany({
     data: [
       {
