@@ -94,9 +94,64 @@ async function deleteProduct(req, res) {
 
 }
 
+async function adjustStock(req, res) {
+
+    try {
+
+        const adjustment = await productService.adjustStock(
+            req.user.id,
+            req.params.id,
+            req.body
+        );
+
+        res.status(201).json({
+            message: "Ajuste de stock realizado exitosamente",
+            adjustment
+        });
+
+    } catch (error) {
+
+        const status = error.status || 400;
+
+        res.status(status).json({
+            message: error.message
+        });
+
+    }
+
+}
+
+async function getStockAdjustments(req, res) {
+
+    try {
+
+        const adjustments = await productService.getStockAdjustments(
+            req.user.id,
+            req.params.id,
+            req.query
+        );
+
+        res.json(adjustments);
+
+    } catch (error) {
+
+        const status = error.status || 400;
+
+        res.status(status).json({
+            message: error.message
+        });
+    
+    }
+
+}
+
+
+
 module.exports = {
     createProduct,
     getProducts,
     updateProduct,
-    deleteProduct
+    deleteProduct,
+    adjustStock,
+    getStockAdjustments
 };
