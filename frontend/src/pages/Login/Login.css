@@ -15,7 +15,6 @@ body,
     align-items: center;
     padding: 20px;
     box-sizing: border-box;
-
     background: linear-gradient(
         135deg,
         var(--secondary) 0%,
@@ -58,12 +57,17 @@ body,
 .login-card input {
     background: var(--card);
     color: var(--foreground);
-    border: 1px solid var(--border);
-    transition: all .2s ease;
+    border: 1px solid rgba(0, 0, 0, 0.653);
+    border-radius: 12px;
+    transition: all 0.2s ease;
 }
 
 .login-card input::placeholder {
     color: var(--muted-foreground);
+}
+
+.login-card input:hover {
+    border-color: rgba(0, 0, 0, 0.35);
 }
 
 .login-card input:focus {

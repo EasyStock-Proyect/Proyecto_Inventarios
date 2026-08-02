@@ -76,7 +76,7 @@ async function createProduct(userId, data) {
 async function getProducts(userId, query) {
 
     const page = Number(query.page) || 1;
-    const limit = Number(query.limit) || 10;
+    const limit = Number(query.limit) || 20;
     
     const search = query.search || "";
     const categoryId = query.categoryId || null;
@@ -88,9 +88,17 @@ async function getProducts(userId, query) {
 
     if (search) {
 
-        where.name = {
-            contains: search,
-        };
+        where.OR = [
+            {
+                name:{
+                    contains: search,
+                }
+            },{
+                sku: {
+                    contains: search
+                }
+            }
+        ]
 
     }
 

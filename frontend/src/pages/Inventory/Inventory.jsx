@@ -1,19 +1,21 @@
+import ProductTable from "../../components/ProductTable/ProductTable";
+
 import "./Inventory.css";
 
 function Inventory() {
+
     return (
         <div className="inventory-container">
+
             <div className="inventory-card">
 
-                <h1>Inventario</h1>
-
-                <p>
-                    Módulo de inventario en desarrollo.
-                </p>
+                <ProductTable />
 
             </div>
+
         </div>
     );
+
 }
 
 export default Inventory;
