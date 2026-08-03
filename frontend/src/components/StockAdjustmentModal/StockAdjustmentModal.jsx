@@ -4,6 +4,15 @@ import { adjustStock } from "../../services/product.service";
 
 import "./StockAdjustmentModal.css";
 
+import {
+    PackagePlus,
+    Undo2,
+    TriangleAlert,
+    ClipboardPen,
+    ArrowUp,
+    ArrowDown
+} from "lucide-react";
+
 function StockAdjustmentModal({
     open,
     product,
@@ -32,10 +41,6 @@ function StockAdjustmentModal({
         }
 
     }, [open]);
-
-    if (!open || !product) {
-        return null;
-    }
 
     if (!open || !product) {
         return null;
@@ -150,36 +155,54 @@ function StockAdjustmentModal({
 
                     <label>Motivo</label>
 
-                    <select
-                        value={reason}
-                        onChange={(event) => {
+                    <div className="reason-chips">
 
-                            setReason(event.target.value);
-
-                            if (event.target.value !== "CORRECTION") {
+                        <button
+                            type="button"
+                            className={reason === "ENTRY" ? "chip active" : "chip"}
+                            onClick={() => {
+                                setReason("ENTRY");
                                 setDirection("INCREASE");
-                            }
+                            }}
+                        >
+                            <PackagePlus size={16} />
+                            Compra
+                        </button>
 
-                        }}
-                    >
+                        <button
+                            type="button"
+                            className={reason === "DEVOLUTION" ? "chip active" : "chip"}
+                            onClick={() => {
+                                setReason("DEVOLUTION");
+                                setDirection("INCREASE");
+                            }}
+                        >
+                            <Undo2 size={16} />
+                            Devolución
+                        </button>
 
-                        <option value="ENTRY">
-                            Compra a proveedor
-                        </option>
-
-                        <option value="DEVOLUTION">
-                            Devolución de cliente
-                        </option>
-
-                        <option value="LOSS">
+                        <button
+                            type="button"
+                            className={reason === "LOSS" ? "chip active" : "chip"}
+                            onClick={() => {
+                                setReason("LOSS");
+                                setDirection("INCREASE");
+                            }}
+                        >
+                            <TriangleAlert size={16} />
                             Pérdida
-                        </option>
+                        </button>
 
-                        <option value="CORRECTION">
-                            Corrección de inventario
-                        </option>
+                        <button
+                            type="button"
+                            className={reason === "CORRECTION" ? "chip active" : "chip"}
+                            onClick={() => setReason("CORRECTION")}
+                        >
+                            <ClipboardPen size={16} />
+                            Corrección
+                        </button>
 
-                    </select>
+                    </div>
 
                     <p
                         className={`adjustment-help
@@ -212,22 +235,27 @@ function StockAdjustmentModal({
 
                         <label>Tipo de corrección</label>
 
-                        <select
-                            value={direction}
-                            onChange={(event) =>
-                                setDirection(event.target.value)
-                            }
-                        >
+                        <div className="direction-chips">
 
-                            <option value="INCREASE">
-                                Aumentar existencias
-                            </option>
+                            <button
+                                type="button"
+                                className={direction === "INCREASE" ? "chip active" : "chip"}
+                                onClick={() => setDirection("INCREASE")}
+                            >
+                                <ArrowUp size={16} />
+                                Aumentar
+                            </button>
 
-                            <option value="DECREASE">
-                                Disminuir existencias
-                            </option>
+                            <button
+                                type="button"
+                                className={direction === "DECREASE" ? "chip active" : "chip"}
+                                onClick={() => setDirection("DECREASE")}
+                            >
+                                <ArrowDown size={16} />
+                                Disminuir
+                            </button>
 
-                        </select>
+                        </div>
 
                     </div>
 
