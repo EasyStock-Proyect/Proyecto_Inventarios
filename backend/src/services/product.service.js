@@ -284,7 +284,7 @@ async function deleteProduct(userId, productId) {
 
 async function adjustStock(userId, productId, data) {
 
-    const  { quantity, reason, notes } = data;
+    const  { quantity, reason, direction, notes } = data;
 
     const product = await prisma.product.findFirst({
 
@@ -308,8 +308,12 @@ async function adjustStock(userId, productId, data) {
         throw new Error("La cantidad debe ser un número.");
     }
 
-    if (quantity === 0) {
-        throw new Error("La cantidad debe ser diferente de cero.");
+    if (!Number.isInteger(quantity)) {
+        throw new Error("La cantidad debe ser un número entero.");
+    }
+
+    if (quantity <= 0) {
+        throw new Error("La cantidad debe ser mayor que cero.");
     }
 
     if (!reason) {
@@ -318,6 +322,7 @@ async function adjustStock(userId, productId, data) {
     
     const validReasons = [
         "ENTRY",
+        "DEVOLUTION",
         "LOSS",
         "CORRECTION"
     ];
@@ -326,7 +331,52 @@ async function adjustStock(userId, productId, data) {
         throw new Error("Razón de ajuste inválida.");
     }
     
-    const newStock = product.stockCurrent + quantity;
+    if (reason === "CORRECTION") {
+
+        if (!direction) {
+            throw new Error("La dirección de la corrección es obligatoria.");
+        }
+
+        const validDirections = [
+            "INCREASE",
+            "DECREASE"
+        ];
+
+        if (!validDirections.includes(direction)) {
+            throw new Error(
+                "La dirección de la corrección es inválida."
+            );
+        }
+
+    }
+
+    let stockAdjustment;
+
+    switch (reason) {
+
+        case "ENTRY":
+        case "DEVOLUTION":
+
+            stockAdjustment = quantity;
+            break;
+
+        case "LOSS":
+
+            stockAdjustment = -quantity;
+            break;
+
+        case "CORRECTION":
+
+            stockAdjustment =
+                direction === "INCREASE"
+                    ? quantity
+                    : -quantity;
+
+            break;
+
+    }
+
+    const newStock = product.stockCurrent + stockAdjustment;
 
     if (newStock < 0) {
         
@@ -340,7 +390,7 @@ async function adjustStock(userId, productId, data) {
 
     }
 
-    const adjustment = await prisma.$transaction(async (tx) => {
+    const stockMovement = await prisma.$transaction(async (tx) => {
 
         await tx.product.update({
 
@@ -359,7 +409,7 @@ async function adjustStock(userId, productId, data) {
             data: {
                 productId,
                 userId,
-                quantity,
+                quantity: stockAdjustment,
                 reason,
                 notes
             }
@@ -369,7 +419,7 @@ async function adjustStock(userId, productId, data) {
 
     });
 
-    return adjustment;
+    return stockMovement;
 
 }
 
