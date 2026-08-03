@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 
+import StockAdjustmentModal from "../StockAdjustmentModal/StockAdjustmentModal";
+
 import {
     Search,
     Mic,
@@ -35,6 +37,9 @@ function ProductTable() {
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+
+    const [selectedProduct, setSelectedProduct] = useState(null);
+    const [openAdjustmentModal, setOpenAdjustmentModal] = useState(false);
 
     useEffect(() => {
 
@@ -402,6 +407,12 @@ function ProductTable() {
                                                         type="button"
                                                         title="Ajustar stock"
                                                         className="action-button"
+                                                        onClick={() => {
+
+                                                            setSelectedProduct(product);
+                                                            setOpenAdjustmentModal(true);
+
+                                                        }}
                                                     >
 
                                                         <CirclePlus
@@ -480,6 +491,18 @@ function ProductTable() {
                 +
 
             </button>
+
+            <StockAdjustmentModal
+                open={openAdjustmentModal}
+                product={selectedProduct}
+                onClose={() => setOpenAdjustmentModal(false)}
+                onSuccess={() => {
+
+                    cargarProductos();
+                    setOpenAdjustmentModal(false);
+
+                }}
+            />
 
         </div>
 
