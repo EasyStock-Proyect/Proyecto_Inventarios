@@ -1,0 +1,126 @@
+const prisma = require("../config/prisma");
+
+async function createSale(userId, data) {
+
+    const { items } = data;
+
+    if (!items || !Array.isArray(items) || items.length === 0) {
+        throw new Error("La venta debe contener al menos un producto.");
+    }
+
+    return await prisma.$transaction(async (tx) => {
+
+        let total = 0;
+
+        const saleItems = [];
+
+        for (const item of items) {
+
+            const { productId, quantity } = item;
+
+            if (!productId || !quantity) {
+                throw new Error(
+                    "Cada producto debe tener productId y quantity."
+                );
+            }
+
+            if (!Number.isInteger(quantity) || quantity <= 0) {
+                throw new Error(
+                    "La cantidad debe ser un número entero mayor que cero."
+                );
+            }
+
+            const product = await tx.product.findFirst({
+                where: {
+                    id: productId,
+                    userId,
+                    deletedAt: null
+                }
+            });
+
+            if (!product) {
+                throw new Error(
+                    `Producto no encontrado: ${productId}`
+                );
+            }
+
+            if (product.stockCurrent < quantity) {
+                throw new Error(
+                    `Stock insuficiente para el producto ${product.name}.`
+                );
+            }
+
+            const subtotal = Number(product.price) * quantity;
+
+            total += subtotal;
+
+            saleItems.push({
+                product,
+                quantity,
+                subtotal
+            });
+        }
+        const sale = await tx.sale.create({
+            data: {
+                userId,
+                total
+            }
+        });
+
+        for (const item of saleItems) {
+
+            const { product, quantity, subtotal } = item;
+
+            await tx.saleItem.create({
+                data: {
+                    saleId: sale.id,
+                    productId: product.id,
+                    quantity,
+                    unitPrice: product.price,
+                    subtotal
+                }
+            });
+
+            const newStock = product.stockCurrent - quantity;
+
+            // Actualizar stock
+            await tx.product.update({
+                where: {
+                    id: product.id
+                },
+                data: {
+                    stockCurrent: newStock
+                }
+            });
+
+            if (newStock <= product.stockMinimum) {
+
+                const existingAlert = await tx.stockAlert.findFirst({
+                    where: {
+                        productId: product.id,
+                        userId,
+                        isRead: false
+                    }
+                });
+
+                if (!existingAlert) {
+
+                    await tx.stockAlert.create({
+                        data: {
+                            productId: product.id,
+                            userId,
+                            stockAlert: newStock
+                        }
+                    });
+
+                }
+            }
+        }
+
+        return sale;
+    });
+}
+
+module.exports = {
+    createSale
+};

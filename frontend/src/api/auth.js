@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:3000/auth";
+const API_URL = "http://localhost:3000/api/auth";
 
 export async function login(data) {
 

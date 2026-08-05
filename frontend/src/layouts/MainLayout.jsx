@@ -1,5 +1,7 @@
 import { Outlet } from "react-router-dom";
 import Sidebar from "../components/Sidebar/Sidebar";
+import Topbar from "../components/Topbar/Topbar";
+
 import "./MainLayout.css";
 
 function MainLayout() {
@@ -8,9 +10,15 @@ function MainLayout() {
 
             <Sidebar />
 
-            <main className="layout-content">
-                <Outlet />
-            </main>
+            <div className="layout-main">
+
+                <Topbar />
+
+                <main className="layout-content">
+                    <Outlet />
+                </main>
+
+            </div>
 
         </div>
     );
