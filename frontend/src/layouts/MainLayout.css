@@ -27,3 +27,20 @@
     }
 
 }
+
+.layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+.layout-main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.layout-content {
+    flex: 1;
+    min-width: 0;
+}
