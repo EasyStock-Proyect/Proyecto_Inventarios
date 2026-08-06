@@ -10,7 +10,8 @@ import {
     CirclePlus,
     Check,
     ChevronLeft,
-    ChevronRight
+    ChevronRight,
+    Plus
 } from "lucide-react";
 
 import { getProducts } from "../../services/product.service";
@@ -18,7 +19,11 @@ import { getCategories } from "../../services/category.service";
 
 import "./ProductTable.css";
 
+import ProductFormModal from "../ProductFormModal/ProductFormModal";
+
 function ProductTable() {
+
+    const [productModalOpen, setProductModalOpen] = useState(false);
 
     const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState([]);
@@ -93,7 +98,7 @@ function ProductTable() {
                 search,
                 categoryId
             });
-            
+
 
             setProducts(response.data);
             setPagination(response.pagination);
@@ -112,6 +117,30 @@ function ProductTable() {
             setLoading(false);
 
         }
+
+    };
+
+    const handleCreateProduct = () => {
+
+        setSelectedProduct(null);
+
+        setProductModalOpen(true);
+
+    };
+
+    const handleEditProduct = (product) => {
+
+        setSelectedProduct(product);
+
+        setProductModalOpen(true);
+
+    };
+
+    const handleCloseProductModal = () => {
+
+        setProductModalOpen(false);
+
+        setSelectedProduct(null);
 
     };
 
@@ -394,6 +423,7 @@ function ProductTable() {
                                                         type="button"
                                                         title="Editar producto"
                                                         className="action-button"
+                                                        onClick={() => handleEditProduct(product)}
                                                     >
 
                                                         <Pencil
@@ -485,10 +515,11 @@ function ProductTable() {
             <button
                 type="button"
                 className="add-product-button"
+                onClick={handleCreateProduct}
                 title="Agregar producto"
             >
 
-                +
+                <Plus size={22} />
 
             </button>
 
@@ -500,6 +531,20 @@ function ProductTable() {
 
                     cargarProductos();
                     setOpenAdjustmentModal(false);
+
+                }}
+            />
+
+            <ProductFormModal
+                open={productModalOpen}
+                product={selectedProduct}
+                categories={categories}
+                products={products}
+                onClose={handleCloseProductModal}
+                onSuccess={() => {
+
+                    handleCloseProductModal();
+                    cargarProductos();
 
                 }}
             />

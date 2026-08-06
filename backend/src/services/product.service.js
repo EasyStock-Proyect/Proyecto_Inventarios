@@ -1,5 +1,54 @@
 const prisma = require ("../config/prisma");
 
+async function generateSku(userId, categoryId) {
+
+    const category = await prisma.category.findFirst({
+
+        where: {
+            id: categoryId,
+            userId
+        }
+
+    });
+
+    if (!category) {
+        throw new Error("Categoría no encontrada.");
+    }
+
+    const prefix = category.name
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-zA-Z]/g, "")
+        .substring(0, 3)
+        .toUpperCase();
+
+    const lastProduct = await prisma.product.findFirst({
+
+        where: {
+            userId,
+            categoryId
+        },
+
+        orderBy: {
+            sku: "desc"
+        }
+
+    });
+
+    let nextNumber = 1;
+
+    if (lastProduct) {
+
+        const parts = lastProduct.sku.split("-");
+
+        nextNumber = Number(parts[1]) + 1;
+
+    }
+
+    return `${prefix}-${String(nextNumber).padStart(4, "0")}`;
+
+}
+
 async function createProduct(userId, data) {
 
     const {
@@ -13,7 +62,6 @@ async function createProduct(userId, data) {
 
     if (
         !name ||
-        !sku ||
         !categoryId ||
         price === undefined ||
         stockCurrent === undefined ||
@@ -26,8 +74,44 @@ async function createProduct(userId, data) {
         throw new Error("El nombre del producto es obligatorio.");
     }
 
-    if (!sku.trim()) {
-        throw new Error("El SKU del producto es obligatorio.");
+    if (stockCurrent < 0) {
+        throw new Error("El stock inicial no puede ser negativo.");
+    }
+
+    if (stockMinimum < 0) {
+        throw new Error("El stock mínimo no puede ser negativo.");
+    }
+
+    if (price <= 0) {
+        throw new Error("El precio debe ser mayor que cero.");
+    }
+
+    let finalSku;
+
+    if (sku && sku.trim()) {
+
+        finalSku = sku.trim();
+
+        const existingProduct = await prisma.product.findFirst({
+
+            where: {
+                userId,
+                sku: finalSku
+            }
+
+        });
+
+        if (existingProduct) {
+            throw new Error("Ya existe un producto con ese SKU.");
+        }
+
+    } else {
+
+        finalSku = await generateSku(
+            userId,
+            categoryId
+        );
+
     }
 
     const category = await prisma.category.findFirst({
@@ -43,26 +127,13 @@ async function createProduct(userId, data) {
         throw new Error("Categoría no encontrada.");
     }
 
-    const existingProduct = await prisma.product.findFirst({
-
-        where: {
-            userId,
-            sku
-        }
-    
-    });
-
-    if (existingProduct) {
-        throw new Error("Ya existe un producto con ese SKU.");
-    }
-
     const product = await prisma.product.create({
 
         data: {
             userId,
             categoryId,
             name: name.trim(),
-            sku: sku.trim(),
+            sku: finalSku,
             price,
             stockCurrent,
             stockMinimum
@@ -228,22 +299,23 @@ async function updateProduct(userId, productId, data) {
         updateData.price = data.price;
     }
 
-    if (data.stockCurrent !== undefined) {
-        updateData.stockCurrent = data.stockCurrent;
-    }
-
     if (data.stockMinimum !== undefined) {
         updateData.stockMinimum = data.stockMinimum;
     }
 
     const updatedProduct = await prisma.product.update({
-
         where: {
             id: productId
         },
-
-        data: updateData
-
+        data: updateData,
+        include: {
+            category: {
+                select: {
+                    id: true,
+                    name: true
+                }
+            }
+        }
     });
 
     return updatedProduct;
@@ -447,7 +519,8 @@ async function getStockAdjustments(userId, productId, query) {
     const adjustments = await prisma.stockMovement.findMany({
 
         where: {
-            productId
+            productId,
+            userId
         },
 
         skip,
@@ -488,5 +561,6 @@ module.exports = {
     updateProduct,
     deleteProduct,
     adjustStock,
-    getStockAdjustments
+    getStockAdjustments,
+    generateSku
 };
