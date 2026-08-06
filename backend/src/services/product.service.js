@@ -22,28 +22,40 @@ async function generateSku(userId, categoryId) {
         .substring(0, 3)
         .toUpperCase();
 
-    const lastProduct = await prisma.product.findFirst({
+    const products = await prisma.product.findMany({
 
         where: {
             userId,
             categoryId
         },
 
-        orderBy: {
-            sku: "desc"
+        select: {
+            sku: true
         }
 
     });
 
-    let nextNumber = 1;
+    let maxNumber = 0;
 
-    if (lastProduct) {
+    products.forEach(product => {
 
-        const parts = lastProduct.sku.split("-");
+        const parts = product.sku.split("-");
 
-        nextNumber = Number(parts[1]) + 1;
+        if (parts.length === 2) {
 
-    }
+            const number = Number(parts[1]);
+
+            if (!isNaN(number) && number > maxNumber) {
+
+                maxNumber = number;
+
+            }
+
+        }
+
+    });
+
+    const nextNumber = maxNumber + 1;
 
     return `${prefix}-${String(nextNumber).padStart(4, "0")}`;
 

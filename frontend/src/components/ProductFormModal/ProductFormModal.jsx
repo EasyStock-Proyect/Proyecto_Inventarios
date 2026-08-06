@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 
+import { AlertCircle, X } from "lucide-react";
+
 import {
     createProduct,
     updateProduct,
@@ -7,6 +9,8 @@ import {
 } from "../../services/product.service";
 
 import { getCategories } from "../../services/category.service";
+
+import CustomSelect from "../CustomSelect/CustomSelect";
 
 import "./ProductFormModal.css";
 
@@ -226,9 +230,21 @@ function ProductFormModal({
 
     return (
 
-        <div className="product-form-overlay">
+        <div 
+            className="product-form-overlay"
+            onClick={onClose}  
+        >
 
             <div className="product-form-modal">
+
+                <button
+                    type="button"
+                    className="modal-close-button"
+                    onClick={onClose}
+                    title="Cerrar"
+                >
+                    <X size={22} />
+                </button>
 
                 <h2>{title}</h2>
 
@@ -242,6 +258,19 @@ function ProductFormModal({
                         onChange={(event) =>
                             setName(event.target.value)
                         }
+                    />
+
+                </div>
+
+                <div className="form-group">
+
+                    <label>Categoría</label>
+
+                    <CustomSelect
+                        value={categoryId}
+                        onChange={setCategoryId}
+                        options={categories}
+                        placeholder="Seleccione una categoría"
                     />
 
                 </div>
@@ -278,38 +307,6 @@ function ProductFormModal({
                     <small className="field-help">
                         Si deja este campo vacío, el sistema generará un SKU automáticamente según la categoría seleccionada.
                     </small>
-
-                </div>
-
-                <div className="form-group">
-
-                    <label>Categoría</label>
-
-                    <select
-                        value={categoryId}
-                        onChange={(event) =>
-                            setCategoryId(event.target.value)
-                        }
-                    >
-
-                        <option value="">
-                            Seleccione una categoría
-                        </option>
-
-                        {categories.map((category) => (
-
-                            <option
-                                key={category.id}
-                                value={category.id}
-                            >
-
-                                {category.name}
-
-                            </option>
-
-                        ))}
-
-                    </select>
 
                 </div>
 
@@ -379,11 +376,13 @@ function ProductFormModal({
 
                 {error && (
 
-                    <p className="form-error">
+                    <div className="form-error">
 
-                        {error}
+                        <AlertCircle size={20} />
 
-                    </p>
+                        <p>{error}</p>
+
+                    </div>
 
                 )}
 
