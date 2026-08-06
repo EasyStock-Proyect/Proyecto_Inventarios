@@ -16,12 +16,19 @@
 }
 
 .sidebar-logo{
-
     display:flex;
-    justify-content:center;
+    flex-direction:column;
+    align-items:center;
+    gap:12px;
 
     margin-bottom:40px;
+}
 
+.sidebar-business-name{
+    font-size:16px;
+    font-weight:600;
+    color:var(--foreground);
+    text-align:center;
 }
 
 .sidebar-menu{
