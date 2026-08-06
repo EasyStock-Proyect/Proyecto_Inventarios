@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { FiBell } from "react-icons/fi";
 
+import { getCurrentUser } from "../../services/auth.service";
+
 import {
     getAlerts,
     markAlertAsRead
@@ -17,6 +19,7 @@ function Topbar() {
     const [showNotifications, setShowNotifications] =
         useState(false);
 
+    const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(false);
 
 
@@ -39,6 +42,31 @@ function Topbar() {
 
     };
 
+    useEffect(() => {
+
+        const loadUser = async () => {
+
+            try {
+
+                const data = await getCurrentUser();
+
+                setUser(data);
+
+            } catch (error) {
+
+                console.error(
+                    "Error cargando usuario:",
+                    error
+                );
+
+            }
+
+        };
+
+
+        loadUser();
+
+    }, []);
 
     useEffect(() => {
 
@@ -127,7 +155,7 @@ function Topbar() {
 
                 <div className="topbar-title">
                     <span>
-                        Tienda La Esperanza
+                        {user?.businessName || "Mi tienda"}
                     </span>
                 </div>
 
