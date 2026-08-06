@@ -1,6 +1,4 @@
 const jwt = require("jsonwebtoken");
-const { use } = require("../routes");
-const Module = require("node:module");
 
 const generateAccessToken = (user) => {
     return jwt.sign(
@@ -20,7 +18,7 @@ const generateRefreshToken = (user) => {
         {
             id: user.id
         },
-        process.env.JWT_SECRET,
+        process.env.JWT_REFRESH_SECRET, 
         {
             expiresIn: "7d"
         }
