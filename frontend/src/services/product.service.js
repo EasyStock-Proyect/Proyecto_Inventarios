@@ -10,6 +10,29 @@ export const getProducts = async (params = {}) => {
     
 };
 
+export const createProduct = async (data) => {
+
+    const response = await api.post(
+        "/products",
+        data
+    );
+
+    return response.data;
+
+};
+
+
+export const updateProduct = async (id, data) => {
+
+    const response = await api.put(
+        `/products/${id}`,
+        data
+    );
+
+    return response.data;
+
+};
+
 export const adjustStock = async (productId, data) => {
 
     const response = await api.post(
@@ -20,3 +43,17 @@ export const adjustStock = async (productId, data) => {
     return response.data;
 
 };
+
+export const generateSku = async (categoryId) => {
+
+    const response = await api.get(
+        "/products/generate-sku",
+        {
+            params: { categoryId }
+        }
+    );
+
+    return response.data.sku;
+
+};
+

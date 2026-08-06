@@ -145,7 +145,26 @@ async function getStockAdjustments(req, res) {
 
 }
 
+async function generateSku(req, res, next) {
 
+    try {
+
+        const sku = await productService.generateSku(
+
+            req.user.id,
+            req.query.categoryId
+
+        );
+
+        res.json({ sku });
+
+    } catch (error) {
+
+        next(error);
+
+    }
+
+}
 
 module.exports = {
     createProduct,
@@ -153,5 +172,6 @@ module.exports = {
     updateProduct,
     deleteProduct,
     adjustStock,
-    getStockAdjustments
+    getStockAdjustments,
+    generateSku
 };

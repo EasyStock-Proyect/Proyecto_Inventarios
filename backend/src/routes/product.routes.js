@@ -4,6 +4,11 @@ const router = express.Router();
 const productController = require("../controllers/product.controller");
 const authMiddleware = require("../middlewares/auth.middleware");
 
+router.get(
+    "/generate-sku",
+    authMiddleware,
+    productController.generateSku
+);
 
 router.post(
     "/", 
