@@ -10,7 +10,8 @@ import {
     TriangleAlert,
     ClipboardPen,
     ArrowUp,
-    ArrowDown
+    ArrowDown,
+    X
 } from "lucide-react";
 
 function StockAdjustmentModal({
@@ -110,11 +111,26 @@ function StockAdjustmentModal({
     }
 
     return (
-        <div className="stock-adjustment-overlay">
+
+        <div 
+            className="stock-adjustment-overlay"
+            onClick={onClose}
+        >
+
             <div className="stock-adjustment-modal">
+
+                <button
+                    type="button"
+                    className="modal-close-button"
+                    onClick={onClose}
+                    title="Cerrar"
+                >
+                    <X size={22} />
+                </button>
+
                 <h2>Ajustar existencias</h2>
 
-                <p className="product-name">{product.name}</p>
+                <p className="product-card-name">{product.name}</p>
 
                 <p className="product-stock">
                     Existencias actuales: {product.stockCurrent} unidades
