@@ -17,6 +17,8 @@
 
 .product-form-modal {
 
+    position: relative;
+
     width: 100%;
     max-width: 620px;
 
@@ -329,10 +331,83 @@
     align-items: center;
 
     min-height: 46px;
-    
+
+}
+
+.form-error {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    margin-top: 20px;
+
+    padding: 12px 14px;
+
+    border-radius: 12px;
+
+    background: rgba(211, 47, 47, .1);
+
+    border: 1px solid rgba(211, 47, 47, .3);
+
+    color: var(--destructive);
+
+    font-size: .9rem;
+
 }
 
 
+.form-error svg {
+
+    flex-shrink: 0;
+
+}
+
+
+.form-error p {
+
+    margin: 0;
+
+}
+
+.modal-close-button {
+
+    position: absolute;
+
+    top: 18px;
+    right: 18px;
+
+    width: 36px;
+    height: 36px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: none;
+
+    border-radius: 50%;
+
+    background: transparent;
+
+    color: var(--muted-foreground);
+
+    cursor: pointer;
+
+    transition: .2s;
+
+}
+
+
+.modal-close-button:hover {
+
+    background: var(--muted);
+
+    color: var(--foreground);
+
+}
 
 @media (max-width:768px) {
 
