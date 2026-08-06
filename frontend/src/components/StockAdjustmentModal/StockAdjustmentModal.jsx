@@ -117,7 +117,10 @@ function StockAdjustmentModal({
             onClick={onClose}
         >
 
-            <div className="stock-adjustment-modal">
+            <div 
+                className="stock-adjustment-modal"
+                onClick={(event) => event.stopPropagation()}
+            >
 
                 <button
                     type="button"

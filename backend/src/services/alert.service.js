@@ -16,7 +16,13 @@ async function getAlerts(userId) {
                     name: true,
                     sku: true,
                     stockCurrent: true,
-                    stockMinimum: true
+                    stockMinimum: true,
+
+                    category: {
+                        select: {
+                            name: true
+                        }
+                    }
                 }
             }
         },
