@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { FiBell } from "react-icons/fi";
+import { FiBell, FiMenu } from "react-icons/fi";
+import { useLocation } from "react-router-dom";
 
-import { getCurrentUser } from "../../services/auth.service";
 
 import {
     getAlerts,
@@ -12,14 +12,27 @@ import NotificationPanel from "../NotificationPanel/NotificationPanel";
 
 import "./Topbar.css";
 
-function Topbar() {
+function Topbar({ user, setIsMenuOpen }) {
+
+    const location = useLocation();
+
+    const pageTitles = {
+        "/dashboard": "Inicio",
+        "/inventario": "Inventario",
+        "/ventas": "Ventas",
+        "/prediccion": "Predicción",
+        "/ajustes": "Ajustes"
+    };
+
+    const currentPage =
+        pageTitles[location.pathname] || "";
 
     const [alerts, setAlerts] = useState([]);
 
     const [showNotifications, setShowNotifications] =
         useState(false);
 
-    const [user, setUser] = useState(null);
+    //const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(false);
 
 
@@ -41,32 +54,6 @@ function Topbar() {
         }
 
     };
-
-    useEffect(() => {
-
-        const loadUser = async () => {
-
-            try {
-
-                const data = await getCurrentUser();
-
-                setUser(data);
-
-            } catch (error) {
-
-                console.error(
-                    "Error cargando usuario:",
-                    error
-                );
-
-            }
-
-        };
-
-
-        loadUser();
-
-    }, []);
 
     useEffect(() => {
 
@@ -154,9 +141,28 @@ function Topbar() {
             <header className="topbar">
 
                 <div className="topbar-title">
-                    <span>
-                        {user?.businessName || "Mi tienda"}
-                    </span>
+
+                    <button
+                        type="button"
+                        className="topbar-menu-button"
+                        onClick={() => setIsMenuOpen(true)}
+                        aria-label="Abrir menú"
+                    >
+                        <FiMenu />
+                    </button>
+
+                    <div className="topbar-title-text">
+
+                        <span className="business-name">
+                            {user?.businessName || "Mi tienda"}
+                        </span>
+
+                        <span className="page-name">
+                            {currentPage}
+                        </span>
+
+                    </div>
+
                 </div>
 
 

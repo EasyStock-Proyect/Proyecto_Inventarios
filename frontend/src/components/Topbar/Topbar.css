@@ -9,10 +9,24 @@
     flex-shrink: 0;
 }
 
-.topbar-title {
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--foreground);
+.topbar-title{
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+
+.topbar-title-text{
+    display:flex;
+    flex-direction:column;
+}
+
+.business-name{
+    font-size:18px;
+    font-weight:600;
+}
+
+.page-name{
+    display:none;
 }
 
 .topbar-actions {
@@ -59,4 +73,48 @@
     font-weight: 700;
     line-height: 1;
     border: 2px solid var(--background);
+}
+
+.topbar-menu-button {
+    display: none;
+
+    align-items: center;
+    justify-content: center;
+
+    width: 40px;
+    height: 40px;
+
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+
+    color: var(--foreground);
+    font-size: 24px;
+    cursor: pointer;
+
+    transition: background 0.2s ease;
+}
+
+.topbar-menu-button:hover {
+    background: var(--hover);
+}
+
+@media (max-width: 768px) {
+
+    .topbar {
+        padding: 0 16px;
+    }
+
+    .topbar-menu-button {
+        display: flex;
+    }
+
+    .page-name{
+        display:block;
+        font-size:13px;
+        font-weight:500;
+        color:var(--text-secondary);
+        margin-top:2px;
+    }
+
 }
