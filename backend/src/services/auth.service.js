@@ -76,9 +76,43 @@ async function login(data) {
         accessToken,
         refreshToken
     };
+
 }
+
+async function getCurrentUser(userId) {
+
+    const user = await prisma.user.findUnique({
+
+        where: {
+            id: userId
+        },
+
+        select: {
+
+            id: true,
+            email: true,
+            businessName: true,
+            businessType: true
+
+        }
+
+    });
+
+
+    if (!user) {
+
+        throw new Error("Usuario no encontrado.");
+
+    }
+
+
+    return user;
+
+}
+
 
 module.exports = {
     register,
-    login
+    login,
+    getCurrentUser
 };

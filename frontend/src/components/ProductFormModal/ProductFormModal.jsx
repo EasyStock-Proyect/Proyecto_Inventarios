@@ -235,7 +235,10 @@ function ProductFormModal({
             onClick={onClose}  
         >
 
-            <div className="product-form-modal">
+            <div 
+                className="product-form-modal"
+                onClick={(event) => event.stopPropagation()}
+            >
 
                 <button
                     type="button"
