@@ -23,7 +23,7 @@ async function markAlertAsRead(req, res) {
 
     try {
 
-        const alert = await alertService.markAlertAsRead(
+        const alert = await alertService.markAsRead(
             req.user.id,
             req.params.id
         );
