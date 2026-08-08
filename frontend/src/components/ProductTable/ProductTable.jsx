@@ -71,20 +71,6 @@ function ProductTable() {
 
     }, []);
 
-
-    useEffect(() => {
-
-        const timer = setTimeout(() => {
-
-            cargarProductos();
-
-        }, 300);
-
-        return () => clearTimeout(timer);
-
-    }, [search, categoryId, page]);
-
-
     const cargarProductos = async () => {
 
         try {
@@ -119,6 +105,19 @@ function ProductTable() {
         }
 
     };
+
+    useEffect(() => {
+
+        const timer = setTimeout(() => {
+
+            cargarProductos();
+
+        }, 300);
+
+        return () => clearTimeout(timer);
+
+    }, [search, categoryId, page]);
+
 
     const handleCreateProduct = () => {
 
