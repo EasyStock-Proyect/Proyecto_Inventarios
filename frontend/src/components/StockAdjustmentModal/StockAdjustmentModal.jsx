@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { adjustStock } from "../../services/product.service";
 
@@ -29,20 +29,6 @@ function StockAdjustmentModal({
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
-    useEffect(() => {
-
-        if (open) {
-
-            setQuantity("");
-            setReason("ENTRY");
-            setDirection("INCREASE");
-            setNotes("");
-            setError("");
-
-        }
-
-    }, [open]);
-
     if (!open || !product) {
         return null;
     }
@@ -64,6 +50,7 @@ function StockAdjustmentModal({
         if (!quantity || Number(quantity) <= 0) {
 
             setError("Ingrese una cantidad válida.");
+
             return;
 
         }
@@ -96,10 +83,8 @@ function StockAdjustmentModal({
         } catch (error) {
 
             setError(
-
                 error.response?.data?.message ||
                 "No fue posible ajustar las existencias."
-
             );
 
         } finally {
@@ -108,16 +93,49 @@ function StockAdjustmentModal({
 
         }
 
-    }
+    };
+
+    const handleReasonChange = (newReason) => {
+
+        setReason(newReason);
+
+        if (
+            newReason === "ENTRY" ||
+            newReason === "DEVOLUTION"
+        ) {
+            setDirection("INCREASE");
+        }
+
+        if (newReason === "LOSS") {
+            setDirection("DECREASE");
+        }
+
+    };
+
+    const handleQuantityChange = (event) => {
+
+        const value = event.target.value;
+
+        if (
+            value === "" ||
+            /^[0-9]+$/.test(value)
+        ) {
+
+            setQuantity(value);
+            setError("");
+
+        }
+
+    };
 
     return (
 
-        <div 
+        <div
             className="stock-adjustment-overlay"
             onClick={onClose}
         >
 
-            <div 
+            <div
                 className="stock-adjustment-modal"
                 onClick={(event) => event.stopPropagation()}
             >
@@ -133,7 +151,9 @@ function StockAdjustmentModal({
 
                 <h2>Ajustar existencias</h2>
 
-                <p className="product-card-name">{product.name}</p>
+                <p className="product-card-name">
+                    {product.name}
+                </p>
 
                 <p className="product-stock">
                     Existencias actuales: {product.stockCurrent} unidades
@@ -148,27 +168,16 @@ function StockAdjustmentModal({
                         min="1"
                         step="1"
                         value={quantity}
-                        onChange={(event) => {
-
-                            const value = event.target.value;
-
-                            if (
-                                value === "" ||
-                                /^[0-9]+$/.test(value)
-                            ) {
-
-                                setQuantity(value);
-                                setError("");
-
-                            }
-
-                        }}
+                        onChange={handleQuantityChange}
                     />
 
-                    {error && <small className="input-error">{error}</small>}
+                    {error && (
+                        <small className="input-error">
+                            {error}
+                        </small>
+                    )}
+
                 </div>
-
-
 
                 <div className="form-group">
 
@@ -178,11 +187,14 @@ function StockAdjustmentModal({
 
                         <button
                             type="button"
-                            className={reason === "ENTRY" ? "chip active" : "chip"}
-                            onClick={() => {
-                                setReason("ENTRY");
-                                setDirection("INCREASE");
-                            }}
+                            className={
+                                reason === "ENTRY"
+                                    ? "chip active"
+                                    : "chip"
+                            }
+                            onClick={() =>
+                                handleReasonChange("ENTRY")
+                            }
                         >
                             <PackagePlus size={16} />
                             Compra
@@ -190,11 +202,14 @@ function StockAdjustmentModal({
 
                         <button
                             type="button"
-                            className={reason === "DEVOLUTION" ? "chip active" : "chip"}
-                            onClick={() => {
-                                setReason("DEVOLUTION");
-                                setDirection("INCREASE");
-                            }}
+                            className={
+                                reason === "DEVOLUTION"
+                                    ? "chip active"
+                                    : "chip"
+                            }
+                            onClick={() =>
+                                handleReasonChange("DEVOLUTION")
+                            }
                         >
                             <Undo2 size={16} />
                             Devolución
@@ -202,11 +217,14 @@ function StockAdjustmentModal({
 
                         <button
                             type="button"
-                            className={reason === "LOSS" ? "chip active" : "chip"}
-                            onClick={() => {
-                                setReason("LOSS");
-                                setDirection("INCREASE");
-                            }}
+                            className={
+                                reason === "LOSS"
+                                    ? "chip active"
+                                    : "chip"
+                            }
+                            onClick={() =>
+                                handleReasonChange("LOSS")
+                            }
                         >
                             <TriangleAlert size={16} />
                             Pérdida
@@ -214,8 +232,14 @@ function StockAdjustmentModal({
 
                         <button
                             type="button"
-                            className={reason === "CORRECTION" ? "chip active" : "chip"}
-                            onClick={() => setReason("CORRECTION")}
+                            className={
+                                reason === "CORRECTION"
+                                    ? "chip active"
+                                    : "chip"
+                            }
+                            onClick={() =>
+                                handleReasonChange("CORRECTION")
+                            }
                         >
                             <ClipboardPen size={16} />
                             Corrección
@@ -258,8 +282,14 @@ function StockAdjustmentModal({
 
                             <button
                                 type="button"
-                                className={direction === "INCREASE" ? "chip active" : "chip"}
-                                onClick={() => setDirection("INCREASE")}
+                                className={
+                                    direction === "INCREASE"
+                                        ? "chip active"
+                                        : "chip"
+                                }
+                                onClick={() =>
+                                    setDirection("INCREASE")
+                                }
                             >
                                 <ArrowUp size={16} />
                                 Aumentar
@@ -267,8 +297,14 @@ function StockAdjustmentModal({
 
                             <button
                                 type="button"
-                                className={direction === "DECREASE" ? "chip active" : "chip"}
-                                onClick={() => setDirection("DECREASE")}
+                                className={
+                                    direction === "DECREASE"
+                                        ? "chip active"
+                                        : "chip"
+                                }
+                                onClick={() =>
+                                    setDirection("DECREASE")
+                                }
                             >
                                 <ArrowDown size={16} />
                                 Disminuir
@@ -296,7 +332,10 @@ function StockAdjustmentModal({
 
                 <div className="modal-actions">
 
-                    <button type="button" onClick={onClose}>
+                    <button
+                        type="button"
+                        onClick={onClose}
+                    >
                         Cancelar
                     </button>
 
