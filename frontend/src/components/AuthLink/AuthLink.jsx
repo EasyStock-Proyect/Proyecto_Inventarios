@@ -1,7 +1,7 @@
 import "./AuthLink.css"
 import { useNavigate, useLocation} from "react-router-dom";
 
-function AuthLink({ text, linkText, onClick }) {
+function AuthLink({text, linkText}) {
     const navigate = useNavigate();
     const location = useLocation();
     const isLogin = location.pathname === "/login";

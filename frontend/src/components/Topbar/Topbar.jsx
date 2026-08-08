@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { FiBell, FiMenu } from "react-icons/fi";
 import { useLocation } from "react-router-dom";
 
-
 import {
     getAlerts,
     markAlertAsRead
@@ -32,9 +31,7 @@ function Topbar({ user, setIsMenuOpen }) {
     const [showNotifications, setShowNotifications] =
         useState(false);
 
-    //const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(false);
-
 
     const cargarAlertas = async () => {
 
@@ -57,18 +54,22 @@ function Topbar({ user, setIsMenuOpen }) {
 
     useEffect(() => {
 
-        cargarAlertas();
+        const timeout = setTimeout(() => {
+            cargarAlertas();
+        }, 0);
 
         const interval = setInterval(() => {
-
             cargarAlertas();
-
         }, 30000);
 
-        return () => clearInterval(interval);
+        return () => {
+
+            clearTimeout(timeout);
+            clearInterval(interval);
+
+        };
 
     }, []);
-
 
     const handleMarkAsRead = async (alertId) => {
 
@@ -98,7 +99,6 @@ function Topbar({ user, setIsMenuOpen }) {
         }
 
     };
-
 
     const handleMarkAllAsRead = async () => {
 
@@ -133,7 +133,6 @@ function Topbar({ user, setIsMenuOpen }) {
 
     };
 
-
     return (
 
         <>
@@ -165,7 +164,6 @@ function Topbar({ user, setIsMenuOpen }) {
 
                 </div>
 
-
                 <div className="topbar-actions">
 
                     <button
@@ -196,7 +194,6 @@ function Topbar({ user, setIsMenuOpen }) {
                 </div>
 
             </header>
-
 
             {showNotifications && (
 

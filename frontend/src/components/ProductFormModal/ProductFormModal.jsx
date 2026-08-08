@@ -23,7 +23,6 @@ function ProductFormModal({
 
     const isEditing = Boolean(product);
 
-
     const [name, setName] = useState("");
     const [sku, setSku] = useState("");
     const [categoryId, setCategoryId] = useState("");
@@ -37,7 +36,6 @@ function ProductFormModal({
     const [loading, setLoading] = useState(false);
     const [generatingSku, setGeneratingSku] = useState(false);
     const [error, setError] = useState("");
-
 
     useEffect(() => {
 
@@ -61,34 +59,54 @@ function ProductFormModal({
 
     }, []);
 
-
     useEffect(() => {
 
         if (!open) return;
 
-        setError("");
-
         if (isEditing) {
 
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setName(product.name);
+
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setSku(product.sku);
+
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setCategoryId(product.categoryId);
 
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setPrice(product.price);
-            setStockInitial("");
-            setStockMinimum(product.stockMinimum);
 
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            setStockInitial("");
+
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            setStockMinimum(product.stockMinimum);
 
         } else {
 
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setName("");
+
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setSku("");
+
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setCategoryId("");
+
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setPrice("");
+
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setStockInitial("");
+
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setStockMinimum("");
 
         }
+
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setError("");
 
     }, [open, product, isEditing]);
 
@@ -97,6 +115,7 @@ function ProductFormModal({
         if (!categoryId) {
 
             setError("Seleccione una categoría primero.");
+
             return;
 
         }
@@ -112,10 +131,8 @@ function ProductFormModal({
         } catch (error) {
 
             setError(
-
                 error.response?.data?.message ||
                 "No fue posible generar el SKU."
-
             );
 
         } finally {
@@ -136,7 +153,10 @@ function ProductFormModal({
             stockMinimum === ""
         ) {
 
-            setError("Todos los campos obligatorios deben estar completos.");
+            setError(
+                "Todos los campos obligatorios deben estar completos."
+            );
+
             return;
 
         }
@@ -144,6 +164,7 @@ function ProductFormModal({
         if (Number(price) <= 0) {
 
             setError("El precio debe ser mayor que cero.");
+
             return;
 
         }
@@ -154,6 +175,7 @@ function ProductFormModal({
         ) {
 
             setError("Los valores de stock no pueden ser negativos.");
+
             return;
 
         }
@@ -201,10 +223,8 @@ function ProductFormModal({
         } catch (error) {
 
             setError(
-
                 error.response?.data?.message ||
                 "No fue posible guardar el producto."
-
             );
 
         } finally {
@@ -214,7 +234,6 @@ function ProductFormModal({
         }
 
     };
-
 
     if (!open) {
         return null;
@@ -230,12 +249,12 @@ function ProductFormModal({
 
     return (
 
-        <div 
+        <div
             className="product-form-overlay"
-            onClick={onClose}  
+            onClick={onClose}
         >
 
-            <div 
+            <div
                 className="product-form-modal"
                 onClick={(event) => event.stopPropagation()}
             >
@@ -332,6 +351,7 @@ function ProductFormModal({
                 <div className="stock-inputs">
 
                     {!isEditing && (
+
                         <div className="form-group">
 
                             <label>Stock inicial</label>
@@ -346,18 +366,25 @@ function ProductFormModal({
                             />
 
                         </div>
+
                     )}
 
                     {isEditing && (
+
                         <div className="form-group stock-info-group">
 
                             <label>Stock actual</label>
 
                             <div className="stock-info">
-                                <span>{product.stockCurrent} unidades</span>
+
+                                <span>
+                                    {product.stockCurrent} unidades
+                                </span>
+
                             </div>
 
                         </div>
+
                     )}
 
                     <div className="form-group">
@@ -395,9 +422,7 @@ function ProductFormModal({
                         type="button"
                         onClick={onClose}
                     >
-
                         Cancelar
-
                     </button>
 
                     <button
