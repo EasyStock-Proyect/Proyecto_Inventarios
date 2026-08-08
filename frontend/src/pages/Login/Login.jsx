@@ -9,7 +9,6 @@ import Footer from "../../components/Footer/Footer";
 import AuthLink from "../../components/AuthLink/AuthLink";
 import { useState } from "react";
 import { login } from "../../api/auth";
-import { useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 
 
@@ -18,8 +17,6 @@ function Login() {
     const [password, setPassword] = useState("");
 
     const [serverError, setServerError] = useState("");
-    const location = useLocation();
-    const successMessage = location.state?.success;
     const navigate = useNavigate();
 
     const [errors, setErrors] = useState({
