@@ -18,7 +18,7 @@ async function createSale(userId, data) {
 
             const { productId, quantity } = item;
 
-            if (!productId || !quantity) {
+            if (!productId || quantity === undefined || quantity === null) {
                 throw new Error(
                     "Cada producto debe tener productId y quantity."
                 );
