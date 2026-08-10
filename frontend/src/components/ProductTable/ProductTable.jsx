@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import StockAdjustmentModal from "../StockAdjustmentModal/StockAdjustmentModal";
 import CategoryManagementModal from "../CategoryManagementModal/CategoryManagementModal";
@@ -49,11 +49,7 @@ function ProductTable() {
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [openAdjustmentModal, setOpenAdjustmentModal] = useState(false);
 
-    useEffect(() => {
 
-        cargarCategorias();
-
-    }, []);
 
     const cargarCategorias = async () => {
 
@@ -74,8 +70,7 @@ function ProductTable() {
 
     };
 
-
-    const cargarProductos = async () => {
+    const cargarProductos = useCallback(async () => {
 
         try {
 
@@ -88,7 +83,6 @@ function ProductTable() {
                 search,
                 categoryId
             });
-
 
             setProducts(response.data);
             setPagination(response.pagination);
@@ -108,7 +102,13 @@ function ProductTable() {
 
         }
 
-    };
+    }, [page, search, categoryId]);
+
+    useEffect(() => {
+
+        cargarCategorias();
+
+    }, []);
 
     useEffect(() => {
 
@@ -120,7 +120,7 @@ function ProductTable() {
 
         return () => clearTimeout(timer);
 
-    }, [search, categoryId, page]);
+    }, [cargarProductos]);
 
 
 

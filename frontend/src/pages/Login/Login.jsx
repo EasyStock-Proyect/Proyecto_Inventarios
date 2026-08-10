@@ -10,8 +10,7 @@ import AuthLink from "../../components/AuthLink/AuthLink";
 import { useState } from "react";
 import { login } from "../../api/auth";
 import { useNavigate } from "react-router-dom";
-import { setAccessToken } from "../../auth/tokenManager";
-import { useAuth } from "../../auth/AuthContext";
+import { useAuth } from "../../auth/useAuth";
 
 
 function Login() {

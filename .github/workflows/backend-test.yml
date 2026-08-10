@@ -14,15 +14,16 @@ jobs:
     runs-on: ubuntu-latest
 
     services:
-      mysql:
-        image: mysql:8.0
+      postgres:
+        image: postgres:16
         env:
-          MYSQL_ROOT_PASSWORD: admin
-          MYSQL_DATABASE: inventarios_db_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: admin
+          POSTGRES_DB: inventarios_db_test
         ports:
-          - 3306:3306
+          - 5432:5432
         options: >-
-          --health-cmd="mysqladmin ping -h 127.0.0.1 -u root -padmin"
+          --health-cmd="pg_isready -U postgres -d inventarios_db_test"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
@@ -51,7 +52,7 @@ jobs:
       - name: Crear base de datos de pruebas
         run: npx prisma migrate deploy
         env:
-          DATABASE_URL: mysql://root:admin@127.0.0.1:3306/inventarios_db_test
+          DATABASE_URL: postgresql://postgres:admin@127.0.0.1:5432/inventarios_db_test
 
       - name: Ejecutar pruebas
         run: npm test

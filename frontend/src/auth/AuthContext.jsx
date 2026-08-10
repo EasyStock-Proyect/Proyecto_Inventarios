@@ -1,9 +1,9 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useEffect, useState } from "react";
 
 import { setAccessToken, clearAccessToken } from "./tokenManager";
 import { restoreSession } from "./auth.service";
 
-const AuthContext = createContext(null);
+export const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
 
@@ -77,11 +77,5 @@ export function AuthProvider({ children }) {
         </AuthContext.Provider>
 
     );
-
-}
-
-export function useAuth() {
-
-    return useContext(AuthContext);
 
 }
