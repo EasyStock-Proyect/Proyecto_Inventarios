@@ -20,7 +20,7 @@ export const restoreSession = async () => {
 
         return true;
 
-    } catch (error) {
+    } catch {
 
         return false;
 

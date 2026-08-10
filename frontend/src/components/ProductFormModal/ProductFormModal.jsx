@@ -65,47 +65,24 @@ function ProductFormModal({
 
         if (isEditing) {
 
-            // eslint-disable-next-line react-hooks/set-state-in-effect
             setName(product.name);
-
-            // eslint-disable-next-line react-hooks/set-state-in-effect
             setSku(product.sku);
-
-            // eslint-disable-next-line react-hooks/set-state-in-effect
             setCategoryId(product.categoryId);
-
-            // eslint-disable-next-line react-hooks/set-state-in-effect
             setPrice(product.price);
-
-            // eslint-disable-next-line react-hooks/set-state-in-effect
             setStockInitial("");
-
-            // eslint-disable-next-line react-hooks/set-state-in-effect
             setStockMinimum(product.stockMinimum);
 
         } else {
 
-            // eslint-disable-next-line react-hooks/set-state-in-effect
             setName("");
-
-            // eslint-disable-next-line react-hooks/set-state-in-effect
             setSku("");
-
-            // eslint-disable-next-line react-hooks/set-state-in-effect
             setCategoryId("");
-
-            // eslint-disable-next-line react-hooks/set-state-in-effect
             setPrice("");
-
-            // eslint-disable-next-line react-hooks/set-state-in-effect
             setStockInitial("");
-
-            // eslint-disable-next-line react-hooks/set-state-in-effect
             setStockMinimum("");
 
         }
 
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setError("");
 
     }, [open, product, isEditing]);

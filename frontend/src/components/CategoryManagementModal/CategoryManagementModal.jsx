@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import {
     Plus,
@@ -37,20 +37,18 @@ function CategoryManagementModal({
 
     const [categoryToDelete, setCategoryToDelete] = useState(null);
 
-    useEffect(() => {
+    const handleClose = () => {
 
-        if (!open) {
+        setName("");
+        setEditingCategoryId(null);
+        setEditingName("");
+        setError("");
+        setSuccess("");
+        setCategoryToDelete(null);
 
-            setName("");
-            setEditingCategoryId(null);
-            setEditingName("");
-            setError("");
-            setSuccess("");
-            setCategoryToDelete(null);
+        onClose();
 
-        }
-
-    }, [open]);
+    };
 
     if (!open) {
         return null;
@@ -239,7 +237,7 @@ function CategoryManagementModal({
             onMouseDown={(event) => {
 
                 if (event.target === event.currentTarget) {
-                    onClose();
+                    handleClose();
                 }
 
             }}
@@ -261,7 +259,7 @@ function CategoryManagementModal({
                     <button
                         type="button"
                         className="category-modal-close"
-                        onClick={onClose}
+                        onClick={handleClose}
                         title="Cerrar"
                     >
 
