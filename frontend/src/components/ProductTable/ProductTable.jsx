@@ -51,28 +51,29 @@ function ProductTable() {
 
     useEffect(() => {
 
-        const cargarCategorias = async () => {
-
-            try {
-
-                const response = await getCategories();
-
-                setCategories(response);
-
-            } catch (error) {
-
-                console.error(
-                    "Error cargando categorías:",
-                    error
-                );
-
-            }
-
-        };
-
         cargarCategorias();
 
     }, []);
+
+    const cargarCategorias = async () => {
+
+        try {
+
+            const response = await getCategories();
+
+            setCategories(response);
+
+        } catch (error) {
+
+            console.error(
+                "Error cargando categorías:",
+                error
+            );
+
+        }
+
+    };
+
 
     const cargarProductos = async () => {
 
@@ -120,6 +121,8 @@ function ProductTable() {
         return () => clearTimeout(timer);
 
     }, [search, categoryId, page]);
+
+
 
 
     const handleCreateProduct = () => {
@@ -558,10 +561,12 @@ function ProductTable() {
                 categories={categories}
                 products={products}
                 onClose={handleCloseProductModal}
-                onSuccess={() => {
+                onSuccess={async () => {
 
                     handleCloseProductModal();
-                    cargarProductos();
+
+                    await cargarProductos();
+                    await cargarCategorias();
 
                 }}
             />

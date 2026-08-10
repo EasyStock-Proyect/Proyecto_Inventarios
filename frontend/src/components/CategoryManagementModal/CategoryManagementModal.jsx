@@ -565,6 +565,7 @@ function CategoryManagementModal({
 
             <ConfirmDialog
                 open={Boolean(categoryToDelete)}
+                type="confirm"
                 title="Eliminar categoría"
                 message={
                     categoryToDelete

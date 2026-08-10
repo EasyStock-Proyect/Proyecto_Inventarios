@@ -1,4 +1,4 @@
-import { AlertTriangle, X } from "lucide-react";
+import { AlertTriangle, CheckCircle2, CircleX, X } from "lucide-react";
 
 import "./ConfirmDialog.css";
 
@@ -10,12 +10,39 @@ function ConfirmDialog({
     cancelText = "Cancelar",
     onConfirm,
     onCancel,
-    loading = false
+    loading = false,
+    type = "confirm"
 }) {
 
     if (!open) {
         return null;
     }
+
+    const resolvedType = ["success", "error", "warning", "confirm"].includes(type)
+        ? type
+        : "confirm";
+
+    const typeConfig = {
+        success: {
+            icon: CheckCircle2,
+            rootClass: "confirm-dialog-success"
+        },
+        error: {
+            icon: CircleX,
+            rootClass: "confirm-dialog-error"
+        },
+        warning: {
+            icon: AlertTriangle,
+            rootClass: "confirm-dialog-warning"
+        },
+        confirm: {
+            icon: AlertTriangle,
+            rootClass: "confirm-dialog-confirm"
+        }
+    };
+
+    const selectedType = typeConfig[resolvedType];
+    const Icon = selectedType.icon;
 
     return (
 
@@ -24,14 +51,14 @@ function ConfirmDialog({
             onMouseDown={(event) => {
 
                 if (event.target === event.currentTarget && !loading) {
-                    onCancel();
+                    onCancel?.();
                 }
 
             }}
         >
 
             <div
-                className="confirm-dialog"
+                className={`confirm-dialog ${selectedType.rootClass}`}
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="confirm-dialog-title"
@@ -48,7 +75,7 @@ function ConfirmDialog({
                 </button>
 
                 <div className="confirm-dialog-icon">
-                    <AlertTriangle size={22} />
+                    <Icon size={22} />
                 </div>
 
                 <h2 id="confirm-dialog-title">
@@ -61,18 +88,20 @@ function ConfirmDialog({
 
                 <div className="confirm-dialog-actions">
 
-                    <button
-                        type="button"
-                        className="confirm-dialog-cancel"
-                        onClick={onCancel}
-                        disabled={loading}
-                    >
-                        {cancelText}
-                    </button>
+                    {cancelText && (
+                        <button
+                            type="button"
+                            className="confirm-dialog-cancel"
+                            onClick={onCancel}
+                            disabled={loading}
+                        >
+                            {cancelText}
+                        </button>
+                    )}
 
                     <button
                         type="button"
-                        className="confirm-dialog-confirm"
+                        className="confirm-dialog-action-confirm"
                         onClick={onConfirm}
                         disabled={loading}
                     >
