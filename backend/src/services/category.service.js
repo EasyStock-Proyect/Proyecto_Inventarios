@@ -10,15 +10,37 @@ async function getCategories(userId) {
 
         orderBy: {
             name: "asc"
+        },
+
+        include: {
+            _count: {
+                select: {
+                    products: {
+                        where: {
+                            deletedAt: null
+                        }
+                    }
+                }
+            }
         }
 
     });
 
-    return categories;
+    return categories.map((category) => ({
+
+        ...category,
+
+        productCount: category._count.products,
+
+        _count: undefined
+
+    }));
 
 }
+
+
 async function createCategory(userId, data) {
-    
+
     if (!data.name || !data.name.trim()) {
         throw new Error("El nombre de la categoría es obligatorio");
     }
@@ -28,7 +50,7 @@ async function createCategory(userId, data) {
         where: {
             userId: userId
         }
-    
+
     });
 
     if (totalCategories >= 50) {
@@ -58,7 +80,7 @@ async function createCategory(userId, data) {
             name: data.name.trim(),
             userId: userId
         }
-    
+
     });
 
     return category;
