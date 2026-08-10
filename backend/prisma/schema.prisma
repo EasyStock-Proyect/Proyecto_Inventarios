@@ -24,7 +24,22 @@ model User {
   sales         Sale[]
   stockMovements StockMovement[]
   stockAlerts   StockAlert[]
+  refreshTokens RefreshToken[]
+
   @@map("user")
+}
+
+model RefreshToken {
+  id         String    @id @default(uuid()) @db.Char(36)
+  tokenHash  String    @unique @db.VarChar(255)
+  userId     String    @db.Char(36)
+  expiresAt  DateTime
+  revokedAt  DateTime?
+  createdAt  DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_token")
 }
 
 model Category {
