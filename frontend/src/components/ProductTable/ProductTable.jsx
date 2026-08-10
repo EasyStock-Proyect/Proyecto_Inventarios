@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import StockAdjustmentModal from "../StockAdjustmentModal/StockAdjustmentModal";
+import CategoryManagementModal from "../CategoryManagementModal/CategoryManagementModal";
 
 import {
     Search,
@@ -11,7 +12,8 @@ import {
     Check,
     ChevronLeft,
     ChevronRight,
-    Plus
+    Plus,
+    Settings2
 } from "lucide-react";
 
 import { getProducts } from "../../services/product.service";
@@ -24,6 +26,7 @@ import ProductFormModal from "../ProductFormModal/ProductFormModal";
 function ProductTable() {
 
     const [productModalOpen, setProductModalOpen] = useState(false);
+    const [categoryModalOpen, setCategoryModalOpen] = useState(false);
 
     const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState([]);
@@ -180,30 +183,45 @@ function ProductTable() {
 
             <div className="inventory-header">
 
-                <div>
+                <div className="inventory-title-row">
 
-                    <h1>Inventario</h1>
+                    <div>
 
-                    <p>
+                        <h1>Inventario</h1>
 
-                        {pagination.total} productos
+                        <p>
 
-                        <span className="inventory-separator">
-                            •
-                        </span>
+                            {pagination.total} productos
 
-                        <span className="stock-low-text">
+                            <span className="inventory-separator">
+                                •
+                            </span>
 
-                            {productosStockBajo} con stock bajo
+                            <span className="stock-low-text">
 
-                        </span>
+                                {productosStockBajo} con stock bajo
 
-                    </p>
+                            </span>
+
+                        </p>
+
+                    </div>
+
+                    <button
+                        type="button"
+                        className="manage-categories-button"
+                        onClick={() => setCategoryModalOpen(true)}
+                    >
+
+                        <Settings2 size={16} />
+
+                        Gestionar categorías
+
+                    </button>
 
                 </div>
 
             </div>
-
 
             <div className="product-search">
 
@@ -544,6 +562,72 @@ function ProductTable() {
 
                     handleCloseProductModal();
                     cargarProductos();
+
+                }}
+            />
+
+            <CategoryManagementModal
+                open={categoryModalOpen}
+                categories={categories}
+                totalProducts={pagination.total}
+                onClose={() => setCategoryModalOpen(false)}
+                onSuccess={(result) => {
+
+                    if (!result) {
+                        return;
+                    }
+
+                    // Crear categoría
+                    if (!result.type) {
+
+                        setCategories((currentCategories) => [
+
+                            ...currentCategories,
+                            {
+                                ...result,
+                                productCount: 0
+                            }
+
+                        ]);
+
+                        return;
+                    }
+
+                    // Actualizar categoría
+                    if (result.type === "update") {
+
+                        setCategories((currentCategories) =>
+                            currentCategories.map((category) =>
+                                category.id === result.category.id
+                                    ? {
+                                        ...category,
+                                        ...result.category
+                                    }
+                                    : category
+                            )
+                        );
+
+                        return;
+                    }
+
+                    // Eliminar categoría
+                    if (result.type === "delete") {
+
+                        setCategories((currentCategories) =>
+                            currentCategories.filter(
+                                (category) =>
+                                    category.id !== result.categoryId
+                            )
+                        );
+
+                        if (categoryId === result.categoryId) {
+
+                            setCategoryId("");
+                            setPage(1);
+
+                        }
+
+                    }
 
                 }}
             />
