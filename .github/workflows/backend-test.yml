@@ -56,3 +56,7 @@ jobs:
 
       - name: Ejecutar pruebas
         run: npm test
+        env:
+          DATABASE_URL: postgresql://postgres:admin@127.0.0.1:5432/inventarios_db_test
+          JWT_SECRET: inventarios_secret_2026
+          JWT_REFRESH_SECRET: inventarios_refresh_secret_2026
