@@ -5,6 +5,8 @@ import {
     Navigate
 } from "react-router-dom";
 
+import { AuthProvider } from "../auth/AuthProvider";
+
 import Login from "../pages/Login/Login";
 import Register from "../pages/Register/Register";
 
@@ -25,62 +27,66 @@ function AppRouter() {
 
         <BrowserRouter>
 
-            <Routes>
+            <AuthProvider>
 
-                <Route
-                    path="/"
-                    element={<Navigate to="/login" replace />}
-                />
+                <Routes>
 
-                <Route
-                    path="/login"
-                    element={<Login />}
-                />
+                    <Route
+                        path="/"
+                        element={<Navigate to="/login" replace />}
+                    />
 
-                <Route
-                    path="/register"
-                    element={<Register />}
-                />
+                    <Route
+                        path="/login"
+                        element={<Login />}
+                    />
 
-                <Route element={<ProtectedRoute />}>
+                    <Route
+                        path="/register"
+                        element={<Register />}
+                    />
 
-                    <Route element={<MainLayout />}>
+                    <Route element={<ProtectedRoute />}>
 
-                        <Route
-                            path="/dashboard"
-                            element={<Dashboard />}
-                        />
+                        <Route element={<MainLayout />}>
 
-                        <Route
-                            path="/inventario"
-                            element={<Inventory />}
-                        />
+                            <Route
+                                path="/dashboard"
+                                element={<Dashboard />}
+                            />
 
-                        <Route
-                            path="/ventas"
-                            element={<Sales />}
-                        />
+                            <Route
+                                path="/inventario"
+                                element={<Inventory />}
+                            />
 
-                        <Route
-                            path="/prediccion"
-                            element={<Prediction />}
-                        />
+                            <Route
+                                path="/ventas"
+                                element={<Sales />}
+                            />
 
-                        <Route
-                            path="/ajustes"
-                            element={<Settings />}
-                        />
+                            <Route
+                                path="/prediccion"
+                                element={<Prediction />}
+                            />
+
+                            <Route
+                                path="/ajustes"
+                                element={<Settings />}
+                            />
+
+                        </Route>
 
                     </Route>
 
-                </Route>
+                    <Route
+                        path="*"
+                        element={<Navigate to="/login" replace />}
+                    />
 
-                <Route
-                    path="*"
-                    element={<Navigate to="/login" replace />}
-                />
+                </Routes>
 
-            </Routes>
+            </AuthProvider>
 
         </BrowserRouter>
 

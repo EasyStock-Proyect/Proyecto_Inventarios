@@ -10,6 +10,7 @@ import AuthLink from "../../components/AuthLink/AuthLink";
 import { useState } from "react";
 import { login } from "../../api/auth";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../auth/useAuth";
 
 
 function Login() {
@@ -23,6 +24,8 @@ function Login() {
         email: "",
         password: ""
     });
+
+    const { loginUser } = useAuth();
 
     const validacionForm = () => {
 
@@ -68,15 +71,7 @@ function Login() {
                 password
             });
 
-            localStorage.setItem(
-                "accessToken",
-                response.accessToken
-            );
-
-            localStorage.setItem(
-                "refreshToken",
-                response.refreshToken
-            );
+            loginUser(response.accessToken);
 
             navigate("/dashboard");
 
