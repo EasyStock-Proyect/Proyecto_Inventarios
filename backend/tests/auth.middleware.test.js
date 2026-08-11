@@ -1,8 +1,8 @@
 jest.mock("../src/utils/jwt", () => ({
-    veriffyToken: jest.fn()
+    verifyToken: jest.fn()
 }));
 
-const { veriffyToken } =
+const { verifyToken } =
     require("../src/utils/jwt");
 
 const authMiddleware =
@@ -87,7 +87,7 @@ test("debe aceptar token válido", () => {
     const res = response();
     const next = jest.fn();
 
-    veriffyToken.mockReturnValue({
+    verifyToken.mockReturnValue({
         id: "user1"
     });
 
@@ -111,7 +111,7 @@ test("debe rechazar token inválido", () => {
     const res = response();
     const next = jest.fn();
 
-    veriffyToken.mockImplementation(() => {
+    verifyToken.mockImplementation(() => {
         throw new Error("Invalid token");
     });
 

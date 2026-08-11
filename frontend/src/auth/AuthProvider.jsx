@@ -1,9 +1,8 @@
-import { createContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { AuthContext } from "./AuthContext";
 
 import { setAccessToken, clearAccessToken } from "./tokenManager";
 import { restoreSession } from "./auth.service";
-
-export const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
 

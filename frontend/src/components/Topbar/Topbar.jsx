@@ -33,7 +33,7 @@ function Topbar({ user, setIsMenuOpen }) {
 
     const [loading, setLoading] = useState(false);
 
-    const cargarAlertas = async () => {
+    const loadAlerts = async () => {
 
         try {
 
@@ -55,11 +55,11 @@ function Topbar({ user, setIsMenuOpen }) {
     useEffect(() => {
 
         const timeout = setTimeout(() => {
-            cargarAlertas();
+            loadAlerts();
         }, 0);
 
         const interval = setInterval(() => {
-            cargarAlertas();
+            loadAlerts();
         }, 30000);
 
         return () => {
@@ -123,7 +123,7 @@ function Topbar({ user, setIsMenuOpen }) {
                 error
             );
 
-            await cargarAlertas();
+            await loadAlerts();
 
         } finally {
 

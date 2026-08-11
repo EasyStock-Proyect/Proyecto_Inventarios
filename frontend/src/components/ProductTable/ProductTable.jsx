@@ -51,7 +51,7 @@ function ProductTable() {
 
 
 
-    const cargarCategorias = async () => {
+    const loadCategories = async () => {
 
         try {
 
@@ -70,7 +70,7 @@ function ProductTable() {
 
     };
 
-    const cargarProductos = useCallback(async () => {
+    const loadProducts = useCallback(async () => {
 
         try {
 
@@ -106,7 +106,26 @@ function ProductTable() {
 
     useEffect(() => {
 
-        cargarCategorias();
+        const initializeCategories = async () => {
+
+            try {
+
+                const response = await getCategories();
+
+                setCategories(response);
+
+            } catch (error) {
+
+                console.error(
+                    "Error cargando categorías:",
+                    error
+                );
+
+            }
+
+        };
+
+        initializeCategories();
 
     }, []);
 
@@ -114,13 +133,13 @@ function ProductTable() {
 
         const timer = setTimeout(() => {
 
-            cargarProductos();
+            loadProducts();
 
         }, 300);
 
         return () => clearTimeout(timer);
 
-    }, [cargarProductos]);
+    }, [loadProducts]);
 
 
 
@@ -163,17 +182,17 @@ function ProductTable() {
         setPage(1);
 
     };
-    const productoStockBajo = (product) => {
+    const isProductLowStock = (product) => {
 
         return product.stockCurrent < product.stockMinimum;
 
     };
 
-    const productosStockBajo = products.filter(
-        productoStockBajo
+    const lowStockProductsCount = products.filter(
+        isProductLowStock
     ).length;
 
-    const formatoPrecio = (price) => {
+    const formatPrice = (price) => {
 
         return Number(price).toLocaleString("es-CO");
 
@@ -202,7 +221,7 @@ function ProductTable() {
 
                             <span className="stock-low-text">
 
-                                {productosStockBajo} con stock bajo
+                                {lowStockProductsCount} con stock bajo
 
                             </span>
 
@@ -362,7 +381,7 @@ function ProductTable() {
                                 products.map((product) => {
 
                                     const stockBajo =
-                                        productoStockBajo(product);
+                                        isProductLowStock(product);
 
                                     return (
 
@@ -430,7 +449,7 @@ function ProductTable() {
 
                                             <td className="product-price">
 
-                                                ${formatoPrecio(product.price)}
+                                                ${formatPrice(product.price)}
 
                                             </td>
 
@@ -549,13 +568,14 @@ function ProductTable() {
                 onClose={() => setOpenAdjustmentModal(false)}
                 onSuccess={() => {
 
-                    cargarProductos();
+                    loadProducts();
                     setOpenAdjustmentModal(false);
 
                 }}
             />
 
             <ProductFormModal
+                key={selectedProduct?.id || "new"}
                 open={productModalOpen}
                 product={selectedProduct}
                 categories={categories}
@@ -565,8 +585,8 @@ function ProductTable() {
 
                     handleCloseProductModal();
 
-                    await cargarProductos();
-                    await cargarCategorias();
+                    await loadProducts();
+                    await loadCategories();
 
                 }}
             />

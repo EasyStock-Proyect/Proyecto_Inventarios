@@ -23,13 +23,15 @@ function ProductFormModal({
 
     const isEditing = Boolean(product);
 
-    const [name, setName] = useState("");
-    const [sku, setSku] = useState("");
-    const [categoryId, setCategoryId] = useState("");
+    const [name, setName] = useState(product?.name || "");
+    const [sku, setSku] = useState(product?.sku || "");
+    const [categoryId, setCategoryId] = useState(product?.categoryId || "");
 
-    const [price, setPrice] = useState("");
+    const [price, setPrice] = useState(product?.price || "");
     const [stockInitial, setStockInitial] = useState("");
-    const [stockMinimum, setStockMinimum] = useState("");
+    const [stockMinimum, setStockMinimum] = useState(
+        product?.stockMinimum || ""
+    );
 
     const [categories, setCategories] = useState([]);
 
@@ -58,34 +60,6 @@ function ProductFormModal({
         loadCategories();
 
     }, []);
-
-    useEffect(() => {
-
-        if (!open) return;
-
-        if (isEditing) {
-
-            setName(product.name);
-            setSku(product.sku);
-            setCategoryId(product.categoryId);
-            setPrice(product.price);
-            setStockInitial("");
-            setStockMinimum(product.stockMinimum);
-
-        } else {
-
-            setName("");
-            setSku("");
-            setCategoryId("");
-            setPrice("");
-            setStockInitial("");
-            setStockMinimum("");
-
-        }
-
-        setError("");
-
-    }, [open, product, isEditing]);
 
     const handleGenerateSku = async () => {
 

@@ -27,7 +27,10 @@ describe("getCategories", () => {
         prisma.category.findMany.mockResolvedValue([
             {
                 id: "cat1",
-                name: "Tecnología"
+                name: "Tecnología",
+                _count: {
+                    products: 3
+                }
             }
         ]);
 
@@ -35,12 +38,31 @@ describe("getCategories", () => {
             await categoryService.getCategories("user1");
 
         expect(result).toHaveLength(1);
+
+        expect(result[0]).toEqual({
+            id: "cat1",
+            name: "Tecnología",
+            productCount: 3,
+            _count: undefined
+        });
+
         expect(prisma.category.findMany).toHaveBeenCalledWith({
             where: {
                 userId: "user1"
             },
             orderBy: {
                 name: "asc"
+            },
+            include: {
+                _count: {
+                    select: {
+                        products: {
+                            where: {
+                                deletedAt: null
+                            }
+                        }
+                    }
+                }
             }
         });
     });
