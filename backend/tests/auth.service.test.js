@@ -8,6 +8,10 @@ jest.mock("../src/config/prisma", () => ({
     user: {
         findUnique: jest.fn(),
         create: jest.fn()
+    },
+
+    refreshToken: {
+        create: jest.fn()
     }
 }));
 
@@ -39,64 +43,64 @@ describe("register", () => {
     // Resgister test number 2
     test("should throw an error if email already exists", async () => {
 
-    prisma.user.findUnique.mockResolvedValue({
-        id: "1",
-        email: "test@test.com"
-    });
+        prisma.user.findUnique.mockResolvedValue({
+            id: "1",
+            email: "test@test.com"
+        });
 
-    await expect(
-        authService.register({
-            email: "test@test.com",
-            password: "12345678",
-            businessName: "Store",
-            businessType: "Retail"
-        })
-    ).rejects.toThrow(
-        "El email ya está registrado"
-    );
+        await expect(
+            authService.register({
+                email: "test@test.com",
+                password: "12345678",
+                businessName: "Store",
+                businessType: "Retail"
+            })
+        ).rejects.toThrow(
+            "El email ya está registrado"
+        );
 
     });
 
     // Register test number 3
     test("should register a new user successfully", async () => {
 
-    prisma.user.findUnique.mockResolvedValue(null);
+        prisma.user.findUnique.mockResolvedValue(null);
 
-    bcrypt.hash.mockResolvedValue("hashedPassword");
+        bcrypt.hash.mockResolvedValue("hashedPassword");
 
-    prisma.user.create.mockResolvedValue({
-        id: "1",
-        email: "test@test.com",
-        passwordHash: "hashedPassword",
-        businessName: "Store",
-        businessType: "Retail"
-    });
-
-    const result = await authService.register({
-        email: "test@test.com",
-        password: "12345678",
-        businessName: "Store",
-        businessType: "Retail"
-    });
-
-    expect(bcrypt.hash).toHaveBeenCalledWith("12345678", 10);
-
-    expect(prisma.user.create).toHaveBeenCalledWith({
-        data: {
+        prisma.user.create.mockResolvedValue({
+            id: "1",
             email: "test@test.com",
             passwordHash: "hashedPassword",
             businessName: "Store",
             businessType: "Retail"
-        }
-    });
+        });
 
-    expect(result).toEqual({
-        id: "1",
-        email: "test@test.com",
-        passwordHash: "hashedPassword",
-        businessName: "Store",
-        businessType: "Retail"
-    });
+        const result = await authService.register({
+            email: "test@test.com",
+            password: "12345678",
+            businessName: "Store",
+            businessType: "Retail"
+        });
+
+        expect(bcrypt.hash).toHaveBeenCalledWith("12345678", 10);
+
+        expect(prisma.user.create).toHaveBeenCalledWith({
+            data: {
+                email: "test@test.com",
+                passwordHash: "hashedPassword",
+                businessName: "Store",
+                businessType: "Retail"
+            }
+        });
+
+        expect(result).toEqual({
+            id: "1",
+            email: "test@test.com",
+            passwordHash: "hashedPassword",
+            businessName: "Store",
+            businessType: "Retail"
+        });
 
     });
 
@@ -122,49 +126,55 @@ describe("login", () => {
     // Login test number 2
     test("should throw an error if password is incorrect", async () => {
 
-    prisma.user.findUnique.mockResolvedValue({
-        id: "1",
-        email: "test@test.com",
-        passwordHash: "hashedPassword"
-    });
-
-    bcrypt.compare.mockResolvedValue(false);
-
-    await expect(
-        authService.login({
+        prisma.user.findUnique.mockResolvedValue({
+            id: "1",
             email: "test@test.com",
-            password: "wrongPassword"
-        })
-    ).rejects.toThrow("Credenciales inválidas");
+            passwordHash: "hashedPassword"
+        });
+
+        bcrypt.compare.mockResolvedValue(false);
+
+        await expect(
+            authService.login({
+                email: "test@test.com",
+                password: "wrongPassword"
+            })
+        ).rejects.toThrow("Credenciales inválidas");
 
     });
 
     // Login test number 3
     test("should login successfully and return access and refresh tokens", async () => {
 
-    prisma.user.findUnique.mockResolvedValue({
-        id: "1",
-        email: "test@test.com",
-        passwordHash: "hashedPassword"
-    });
+        prisma.user.findUnique.mockResolvedValue({
+            id: "1",
+            email: "test@test.com",
+            passwordHash: "hashedPassword"
+        });
 
-    bcrypt.compare.mockResolvedValue(true);
+        bcrypt.compare.mockResolvedValue(true);
 
-    jwt.sign
-        .mockReturnValueOnce("accessToken")
-        .mockReturnValueOnce("refreshToken");
+        jwt.sign
+            .mockReturnValueOnce("accessToken")
+            .mockReturnValueOnce("refreshToken");
 
-    const result = await authService.login({
-        email: "test@test.com",
-        password: "12345678"
-    });
+        jwt.decode.mockReturnValue({
+            exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60
+        });
 
-    expect(jwt.sign).toHaveBeenCalledTimes(2);
+        const result = await authService.login({
+            email: "test@test.com",
+            password: "12345678"
+        });
 
-    expect(result).toEqual({
-        accessToken: "accessToken",
-        refreshToken: "refreshToken"
-    });
+        expect(jwt.sign).toHaveBeenCalledTimes(2);
+
+        expect(prisma.refreshToken.create).toHaveBeenCalled();
+
+        expect(result).toEqual({
+            accessToken: "accessToken",
+            refreshToken: "refreshToken"
+        });
 
     });
 

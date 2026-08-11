@@ -2,13 +2,13 @@ const authService = require("../services/auth.service")
 
 async function register(req, res, next) {
 
-    try{
+    try {
 
         const user = await authService.register(req.body);
 
         res.status(201).json(user);
 
-    }catch(error){
+    } catch (error) {
 
         next(error)
 
@@ -18,19 +18,34 @@ async function register(req, res, next) {
 
 async function login(req, res, next) {
 
-    try{
+    try {
 
-        const token = await authService.login(req.body);
+        const tokens = await authService.login(req.body);
 
-        res.status(200).json(token);
+        res
+            .cookie(
+                "refreshToken",
+                tokens.refreshToken,
+                {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === "production",
+                    sameSite: "strict",
+                    maxAge: 7 * 24 * 60 * 60 * 1000
+                }
+            )
+            .status(200)
+            .json({
+                accessToken: tokens.accessToken
+            });
 
-    }catch(error){
+    } catch (error) {
 
-        next(error)
+        next(error);
 
     }
-    
+
 }
+
 
 async function getCurrentUser(req, res) {
 
@@ -56,8 +71,76 @@ async function getCurrentUser(req, res) {
 
 }
 
+async function refresh(req, res, next) {
+
+    try {
+
+        const refreshToken = req.cookies.refreshToken;
+
+        const tokens =
+            await authService.refreshSession(
+                refreshToken
+            );
+
+        res
+            .cookie(
+                "refreshToken",
+                tokens.refreshToken,
+                {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === "production",
+                    sameSite: "strict",
+                    maxAge: 7 * 24 * 60 * 60 * 1000
+                }
+            )
+            .status(200)
+            .json({
+                accessToken: tokens.accessToken
+            });
+
+    } catch (error) {
+
+        next(error);
+
+    }
+
+}
+
+async function logout(req, res, next) {
+
+    try {
+
+        const refreshToken =
+            req.cookies.refreshToken;
+
+        await authService.logout(refreshToken);
+
+        res
+            .clearCookie(
+                "refreshToken",
+                {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === "production",
+                    sameSite: "strict"
+                }
+            )
+            .status(200)
+            .json({
+                message: "Sesión cerrada correctamente"
+            });
+
+    } catch (error) {
+
+        next(error);
+
+    }
+
+}
+
 module.exports = {
     register,
     login,
-    getCurrentUser
+    getCurrentUser,
+    refresh,
+    logout
 };

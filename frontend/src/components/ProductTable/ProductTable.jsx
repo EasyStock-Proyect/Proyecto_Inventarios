@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import StockAdjustmentModal from "../StockAdjustmentModal/StockAdjustmentModal";
+import CategoryManagementModal from "../CategoryManagementModal/CategoryManagementModal";
 
 import {
     Search,
@@ -11,7 +12,8 @@ import {
     Check,
     ChevronLeft,
     ChevronRight,
-    Plus
+    Plus,
+    Settings2
 } from "lucide-react";
 
 import { getProducts } from "../../services/product.service";
@@ -24,6 +26,7 @@ import ProductFormModal from "../ProductFormModal/ProductFormModal";
 function ProductTable() {
 
     const [productModalOpen, setProductModalOpen] = useState(false);
+    const [categoryModalOpen, setCategoryModalOpen] = useState(false);
 
     const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState([]);
@@ -46,32 +49,28 @@ function ProductTable() {
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [openAdjustmentModal, setOpenAdjustmentModal] = useState(false);
 
-    useEffect(() => {
 
-        const cargarCategorias = async () => {
 
-            try {
+    const loadCategories = async () => {
 
-                const response = await getCategories();
+        try {
 
-                setCategories(response);
+            const response = await getCategories();
 
-            } catch (error) {
+            setCategories(response);
 
-                console.error(
-                    "Error cargando categorías:",
-                    error
-                );
+        } catch (error) {
 
-            }
+            console.error(
+                "Error cargando categorías:",
+                error
+            );
 
-        };
+        }
 
-        cargarCategorias();
+    };
 
-    }, []);
-
-    const cargarProductos = async () => {
+    const loadProducts = useCallback(async () => {
 
         try {
 
@@ -84,7 +83,6 @@ function ProductTable() {
                 search,
                 categoryId
             });
-
 
             setProducts(response.data);
             setPagination(response.pagination);
@@ -104,19 +102,46 @@ function ProductTable() {
 
         }
 
-    };
+    }, [page, search, categoryId]);
+
+    useEffect(() => {
+
+        const initializeCategories = async () => {
+
+            try {
+
+                const response = await getCategories();
+
+                setCategories(response);
+
+            } catch (error) {
+
+                console.error(
+                    "Error cargando categorías:",
+                    error
+                );
+
+            }
+
+        };
+
+        initializeCategories();
+
+    }, []);
 
     useEffect(() => {
 
         const timer = setTimeout(() => {
 
-            cargarProductos();
+            loadProducts();
 
         }, 300);
 
         return () => clearTimeout(timer);
 
-    }, [search, categoryId, page]);
+    }, [loadProducts]);
+
+
 
 
     const handleCreateProduct = () => {
@@ -157,17 +182,17 @@ function ProductTable() {
         setPage(1);
 
     };
-    const productoStockBajo = (product) => {
+    const isProductLowStock = (product) => {
 
         return product.stockCurrent < product.stockMinimum;
 
     };
 
-    const productosStockBajo = products.filter(
-        productoStockBajo
+    const lowStockProductsCount = products.filter(
+        isProductLowStock
     ).length;
 
-    const formatoPrecio = (price) => {
+    const formatPrice = (price) => {
 
         return Number(price).toLocaleString("es-CO");
 
@@ -180,30 +205,45 @@ function ProductTable() {
 
             <div className="inventory-header">
 
-                <div>
+                <div className="inventory-title-row">
 
-                    <h1>Inventario</h1>
+                    <div>
 
-                    <p>
+                        <h1>Inventario</h1>
 
-                        {pagination.total} productos
+                        <p>
 
-                        <span className="inventory-separator">
-                            •
-                        </span>
+                            {pagination.total} productos
 
-                        <span className="stock-low-text">
+                            <span className="inventory-separator">
+                                •
+                            </span>
 
-                            {productosStockBajo} con stock bajo
+                            <span className="stock-low-text">
 
-                        </span>
+                                {lowStockProductsCount} con stock bajo
 
-                    </p>
+                            </span>
+
+                        </p>
+
+                    </div>
+
+                    <button
+                        type="button"
+                        className="manage-categories-button"
+                        onClick={() => setCategoryModalOpen(true)}
+                    >
+
+                        <Settings2 size={16} />
+
+                        Gestionar categorías
+
+                    </button>
 
                 </div>
 
             </div>
-
 
             <div className="product-search">
 
@@ -341,7 +381,7 @@ function ProductTable() {
                                 products.map((product) => {
 
                                     const stockBajo =
-                                        productoStockBajo(product);
+                                        isProductLowStock(product);
 
                                     return (
 
@@ -409,7 +449,7 @@ function ProductTable() {
 
                                             <td className="product-price">
 
-                                                ${formatoPrecio(product.price)}
+                                                ${formatPrice(product.price)}
 
                                             </td>
 
@@ -528,22 +568,91 @@ function ProductTable() {
                 onClose={() => setOpenAdjustmentModal(false)}
                 onSuccess={() => {
 
-                    cargarProductos();
+                    loadProducts();
                     setOpenAdjustmentModal(false);
 
                 }}
             />
 
             <ProductFormModal
+                key={selectedProduct?.id || "new"}
                 open={productModalOpen}
                 product={selectedProduct}
                 categories={categories}
                 products={products}
                 onClose={handleCloseProductModal}
-                onSuccess={() => {
+                onSuccess={async () => {
 
                     handleCloseProductModal();
-                    cargarProductos();
+
+                    await loadProducts();
+                    await loadCategories();
+
+                }}
+            />
+
+            <CategoryManagementModal
+                open={categoryModalOpen}
+                categories={categories}
+                totalProducts={pagination.total}
+                onClose={() => setCategoryModalOpen(false)}
+                onSuccess={(result) => {
+
+                    if (!result) {
+                        return;
+                    }
+
+                    // Crear categoría
+                    if (!result.type) {
+
+                        setCategories((currentCategories) => [
+
+                            ...currentCategories,
+                            {
+                                ...result,
+                                productCount: 0
+                            }
+
+                        ]);
+
+                        return;
+                    }
+
+                    // Actualizar categoría
+                    if (result.type === "update") {
+
+                        setCategories((currentCategories) =>
+                            currentCategories.map((category) =>
+                                category.id === result.category.id
+                                    ? {
+                                        ...category,
+                                        ...result.category
+                                    }
+                                    : category
+                            )
+                        );
+
+                        return;
+                    }
+
+                    // Eliminar categoría
+                    if (result.type === "delete") {
+
+                        setCategories((currentCategories) =>
+                            currentCategories.filter(
+                                (category) =>
+                                    category.id !== result.categoryId
+                            )
+                        );
+
+                        if (categoryId === result.categoryId) {
+
+                            setCategoryId("");
+                            setPage(1);
+
+                        }
+
+                    }
 
                 }}
             />

@@ -7,6 +7,7 @@ import Tabs from "../../components/Tabs/Tabs";
 import PasswordInput from "../../components/PasswordInputs/PasswordInput";
 import Footer from "../../components/Footer/Footer";
 import AuthLink from "../../components/AuthLink/AuthLink";
+import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
 import { register } from "../../api/auth";
 import { useNavigate } from "react-router-dom";
 
@@ -21,6 +22,7 @@ function Register() {
     const [confiPassword, setConfiPassword] = useState("");
 
     const [serverError, setServerError] = useState("");
+    const [showRegisterSuccess, setShowRegisterSuccess] = useState(false);
     const navigate = useNavigate();
 
     const [errors, setErrors] = useState({
@@ -100,12 +102,7 @@ function Register() {
             });
 
             console.log(response.data);
-            alert("Usuario registrado correctamente.");
-            navigate("/login", {
-                state: {
-                    success: "Usuario registrado correctamente."
-                }
-            });
+            setShowRegisterSuccess(true);
 
         } catch (error) {
 
@@ -212,6 +209,24 @@ function Register() {
                     <AuthLink
                         text="¿Ya tienes cuenta?"
                         linkText="Ingresar"
+                    />
+
+                    <ConfirmDialog
+                        open={showRegisterSuccess}
+                        type="success"
+                        title="Registro exitoso"
+                        message="Usuario registrado correctamente."
+                        confirmText="Continuar"
+                        cancelText=""
+                        onCancel={() => setShowRegisterSuccess(false)}
+                        onConfirm={() => {
+                            setShowRegisterSuccess(false);
+                            navigate("/login", {
+                                state: {
+                                    success: "Usuario registrado correctamente."
+                                }
+                            });
+                        }}
                     />
 
                 </div>
