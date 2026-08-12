@@ -27,3 +27,25 @@ export const restoreSession = async () => {
     }
 
 };
+
+export const logout = async () => {
+
+    try {
+
+        await axios.post(
+            "http://localhost:3000/api/auth/logout",
+            {},
+            {
+                withCredentials: true
+            }
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Error cerrando sesión:",
+            error
+        );
+
+    }
+};
