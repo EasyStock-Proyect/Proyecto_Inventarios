@@ -1,6 +1,7 @@
 import "./Sidebar.css";
 import { NavLink, useNavigate } from "react-router-dom";
 import Logo from "../Logo/Logo";
+import { useAuth } from "../../auth/useAuth";
 
 import {
     FiHome,
@@ -14,15 +15,15 @@ import {
 function Sidebar({ user, isMenuOpen, setIsMenuOpen }) {
 
     //const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const { logoutUser } = useAuth();
 
     const navigate = useNavigate();
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
 
         setIsMenuOpen(false);
 
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("refreshToken");
+        await logoutUser();
 
         navigate("/login", { replace: true });
 

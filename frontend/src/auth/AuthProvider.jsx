@@ -2,7 +2,11 @@ import { useEffect, useState } from "react";
 import { AuthContext } from "./AuthContext";
 
 import { setAccessToken, clearAccessToken } from "./tokenManager";
-import { restoreSession } from "./auth.service";
+
+import {
+    restoreSession,
+    logout
+} from "./auth.service";
 
 export function AuthProvider({ children }) {
 
@@ -53,7 +57,9 @@ export function AuthProvider({ children }) {
 
     };
 
-    const logoutUser = () => {
+    const logoutUser = async () => {
+
+        await logout();
 
         clearAccessToken();
         setAuthenticated(false);
