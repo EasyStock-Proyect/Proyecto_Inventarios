@@ -85,6 +85,83 @@
     background: #f2f7f0;
 }
 
+/* Filtros del historial */
+
+.sales-history-filters {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+}
+
+.sales-date-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.sales-date-field label {
+    color: var(--muted-foreground);
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.sales-date-field input {
+    height: 36px;
+    padding: 0 10px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    outline: none;
+    background: var(--card);
+    color: var(--foreground);
+    font-size: 13px;
+    box-sizing: border-box;
+    transition: 0.2s;
+}
+
+.sales-date-field input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--muted);
+}
+
+.sales-filter-button,
+.sales-clear-filter-button {
+    height: 36px;
+    padding: 0 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.sales-filter-button {
+    border: 1px solid var(--primary);
+    background: var(--primary);
+    color: var(--card);
+}
+
+.sales-filter-button:hover {
+    background: var(--accent-foreground);
+}
+
+.sales-clear-filter-button {
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--muted-foreground);
+}
+
+.sales-clear-filter-button:hover {
+    background: var(--hover);
+}
+
+
+.export-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 /* Responsive */
 
 /* Ajuste de grid en tablets — NO tocar el margen aquí,
@@ -125,5 +202,16 @@
 
     .section-heading h2 {
         font-size: 19px;
+    }
+
+        .sales-history-filters {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .sales-date-field input,
+    .sales-filter-button,
+    .sales-clear-filter-button {
+        width: 100%;
     }
 }

@@ -178,11 +178,30 @@ async function getSales(userId, query = {}) {
     const page = Number(query.page) || 1;
     const limit = Number(query.limit) || 20;
 
+    const { startDate, endDate } = query;
+
+    const where = {
+        userId
+    };
+
+    if (startDate || endDate) {
+
+        where.createdAt = {};
+
+        if (startDate) {
+            where.createdAt.gte =
+                new Date(`${startDate}T00:00:00`);
+        }
+
+        if (endDate) {
+            where.createdAt.lte =
+                new Date(`${endDate}T23:59:59.999`);
+        }
+    }
+
     const sales = await prisma.sale.findMany({
 
-        where: {
-            userId
-        },
+        where,
 
         skip: (page - 1) * limit,
 
@@ -208,9 +227,7 @@ async function getSales(userId, query = {}) {
     });
 
     const total = await prisma.sale.count({
-        where: {
-            userId
-        }
+        where
     });
 
     return {
