@@ -160,8 +160,8 @@ async function getProducts(userId, query) {
 
     const page = Number(query.page) || 1;
     const limit = Number(query.limit) || 20;
-    
-    const search = query.search || "";
+
+    const search = query.search?.trim() || "";
     const categoryId = query.categoryId || null;
 
     const where = {
@@ -173,21 +173,24 @@ async function getProducts(userId, query) {
 
         where.OR = [
             {
-                name:{
+                name: {
                     contains: search,
+                    mode: "insensitive"
                 }
-            },{
+            },
+            {
                 sku: {
-                    contains: search
+                    contains: search,
+                    mode: "insensitive"
                 }
             }
-        ]
+        ];
 
     }
 
     if (categoryId) {
 
-        where.categoryId = categoryId;  
+        where.categoryId = categoryId;
 
     }
 
@@ -212,7 +215,6 @@ async function getProducts(userId, query) {
             }
         }
 
-    
     });
 
     const total = await prisma.product.count({
