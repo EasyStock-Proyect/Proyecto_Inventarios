@@ -58,14 +58,23 @@ function Topbar({ user, setIsMenuOpen }) {
             loadAlerts();
         }, 0);
 
-        const interval = setInterval(() => {
+        const handleSaleCreated = () => {
             loadAlerts();
-        }, 30000);
+        };
+
+        window.addEventListener(
+            "sale-created",
+            handleSaleCreated
+        );
 
         return () => {
 
             clearTimeout(timeout);
-            clearInterval(interval);
+
+            window.removeEventListener(
+                "sale-created",
+                handleSaleCreated
+            );
 
         };
 
@@ -81,7 +90,8 @@ function Topbar({ user, setIsMenuOpen }) {
 
             setAlerts((previousAlerts) =>
                 previousAlerts.filter(
-                    (alert) => alert.id !== alertId
+                    (alert) =>
+                        alert.id !== alertId
                 )
             );
 
@@ -144,7 +154,9 @@ function Topbar({ user, setIsMenuOpen }) {
                     <button
                         type="button"
                         className="topbar-menu-button"
-                        onClick={() => setIsMenuOpen(true)}
+                        onClick={() =>
+                            setIsMenuOpen(true)
+                        }
                         aria-label="Abrir menú"
                     >
                         <FiMenu />
@@ -203,7 +215,9 @@ function Topbar({ user, setIsMenuOpen }) {
                         setShowNotifications(false)
                     }
                     onMarkAsRead={handleMarkAsRead}
-                    onMarkAllAsRead={handleMarkAllAsRead}
+                    onMarkAllAsRead={
+                        handleMarkAllAsRead
+                    }
                     loading={loading}
                 />
 
