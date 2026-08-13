@@ -48,6 +48,8 @@ function ProductTable() {
 
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [openAdjustmentModal, setOpenAdjustmentModal] = useState(false);
+    const [productModalVersion, setProductModalVersion] = useState(0);
+    const [adjustmentModalVersion, setAdjustmentModalVersion] = useState(0);
 
 
 
@@ -147,7 +149,7 @@ function ProductTable() {
     const handleCreateProduct = () => {
 
         setSelectedProduct(null);
-
+        setProductModalVersion((current) => current + 1);
         setProductModalOpen(true);
 
     };
@@ -155,7 +157,7 @@ function ProductTable() {
     const handleEditProduct = (product) => {
 
         setSelectedProduct(product);
-
+        setProductModalVersion((current) => current + 1);
         setProductModalOpen(true);
 
     };
@@ -447,7 +449,7 @@ function ProductTable() {
 
                                             {/* PRECIO */}
 
-                                            <td className="product-price">
+                                            <td className="product-table-price">
 
                                                 ${formatPrice(product.price)}
 
@@ -479,6 +481,7 @@ function ProductTable() {
                                                         onClick={() => {
 
                                                             setSelectedProduct(product);
+                                                            setAdjustmentModalVersion((current) => current + 1);
                                                             setOpenAdjustmentModal(true);
 
                                                         }}
@@ -563,6 +566,7 @@ function ProductTable() {
             </button>
 
             <StockAdjustmentModal
+                key={`stock-adjustment-${selectedProduct?.id ?? "none"}-${adjustmentModalVersion}`}
                 open={openAdjustmentModal}
                 product={selectedProduct}
                 onClose={() => setOpenAdjustmentModal(false)}
@@ -575,7 +579,7 @@ function ProductTable() {
             />
 
             <ProductFormModal
-                key={selectedProduct?.id || "new"}
+                key={`product-form-${selectedProduct?.id ?? "new"}-${productModalVersion}`}
                 open={productModalOpen}
                 product={selectedProduct}
                 categories={categories}

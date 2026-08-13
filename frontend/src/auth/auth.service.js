@@ -1,26 +1,50 @@
 import axios from "axios";
 
-import { setAccessToken } from "./tokenManager";
+import {
+    clearAccessToken,
+    setAccessToken
+} from "./tokenManager";
+
+let refreshPromise = null;
+
+export const refreshSession = async () => {
+
+    if (refreshPromise) {
+        return refreshPromise;
+    }
+
+    refreshPromise = axios.post(
+        "http://localhost:3000/api/auth/refresh",
+        {},
+        {
+            withCredentials: true
+        }
+    )
+        .then((response) => {
+            const accessToken = response.data.accessToken;
+
+            setAccessToken(accessToken);
+
+            return accessToken;
+        })
+        .finally(() => {
+            refreshPromise = null;
+        });
+
+    return refreshPromise;
+};
 
 export const restoreSession = async () => {
 
     try {
 
-        const response = await axios.post(
-            "http://localhost:3000/api/auth/refresh",
-            {},
-            {
-                withCredentials: true
-            }
-        );
-
-        setAccessToken(
-            response.data.accessToken
-        );
+        await refreshSession();
 
         return true;
 
     } catch {
+
+        clearAccessToken();
 
         return false;
 

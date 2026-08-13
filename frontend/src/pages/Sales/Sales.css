@@ -1,56 +1,24 @@
 .sales-page {
-    width: 100%;
-    min-height: 100%;
-
+    width: calc(100% + 60px); /* 30px * 2 lados, compensa layout-content padding:30px */
+    margin: -30px;
+    min-height: calc(100% + 60px);
     box-sizing: border-box;
-
-    background: #f5f7f3;
-}
-
-/* Encabezado */
-
-.sales-header {
-    width: 100%;
-    height: 68px;
-
-    display: flex;
-    align-items: center;
-
-    padding: 0 24px;
-
-    box-sizing: border-box;
-
-    background: #f5f7f3;
-
-    border-bottom: 1px solid #dfe4dc;
-}
-
-.sales-header h1 {
-    margin: 0;
-
-    color: #111111;
-
-    font-size: 16px;
-    font-weight: 600;
+    background: --background;
 }
 
 /* Contenido nueva venta */
 
 .sales-content {
     width: 100%;
-
     display: grid;
-
     grid-template-columns: minmax(0, 1fr) 360px;
-
     gap: 24px;
-
     padding: 18px 24px;
-
     box-sizing: border-box;
+    background: transparent;
+    border: none;
+    border-radius: 0;
 }
-
-/* Sección productos */
 
 .new-sale-section {
     min-width: 0;
@@ -62,24 +30,22 @@
 
 .section-heading h2 {
     margin: 0 0 4px;
-
     color: #111111;
-
     font-size: 22px;
     font-weight: 600;
 }
 
 .section-heading p {
     margin: 0;
-
     color: #444444;
-
     font-size: 13px;
 }
 
 /* Historial */
 
 .history-section {
+    width: 100%;
+    box-sizing: border-box;
     padding: 18px 24px;
 }
 
@@ -87,21 +53,17 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-
     margin-bottom: 18px;
 }
 
 .history-header h2 {
     margin: 0 0 4px;
-
     font-size: 22px;
 }
 
 .history-header p {
     margin: 0;
-
     color: #555555;
-
     font-size: 13px;
 }
 
@@ -109,19 +71,13 @@
     display: flex;
     align-items: center;
     gap: 8px;
-
     padding: 9px 14px;
-
     border: 1px solid #d5d9d3;
     border-radius: 20px;
-
     background: #ffffff;
-
     color: #176b27;
-
     font-size: 13px;
     font-weight: 600;
-
     cursor: pointer;
 }
 
@@ -129,8 +85,87 @@
     background: #f2f7f0;
 }
 
+/* Filtros del historial */
+
+.sales-history-filters {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+}
+
+.sales-date-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.sales-date-field label {
+    color: var(--muted-foreground);
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.sales-date-field input {
+    height: 36px;
+    padding: 0 10px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    outline: none;
+    background: var(--card);
+    color: var(--foreground);
+    font-size: 13px;
+    box-sizing: border-box;
+    transition: 0.2s;
+}
+
+.sales-date-field input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--muted);
+}
+
+.sales-filter-button,
+.sales-clear-filter-button {
+    height: 36px;
+    padding: 0 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.sales-filter-button {
+    border: 1px solid var(--primary);
+    background: var(--primary);
+    color: var(--card);
+}
+
+.sales-filter-button:hover {
+    background: var(--accent-foreground);
+}
+
+.sales-clear-filter-button {
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--muted-foreground);
+}
+
+.sales-clear-filter-button:hover {
+    background: var(--hover);
+}
+
+
+.export-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 /* Responsive */
 
+/* Ajuste de grid en tablets — NO tocar el margen aquí,
+   layout-content todavía tiene padding: 30px hasta 768px */
 @media (max-width: 1000px) {
     .sales-content {
         grid-template-columns: minmax(0, 1fr) 320px;
@@ -148,6 +183,14 @@
     }
 }
 
+@media (max-width: 768px) {
+    .sales-page {
+        width: calc(100% + 40px); /* 20px * 2 lados */
+        margin: -80px -20px -20px;
+        min-height: calc(100% + 100px);
+    }
+}
+
 @media (max-width: 600px) {
     .sales-content {
         padding: 14px;
@@ -159,5 +202,16 @@
 
     .section-heading h2 {
         font-size: 19px;
+    }
+
+        .sales-history-filters {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .sales-date-field input,
+    .sales-filter-button,
+    .sales-clear-filter-button {
+        width: 100%;
     }
 }
