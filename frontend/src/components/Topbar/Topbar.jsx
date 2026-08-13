@@ -33,13 +33,20 @@ function Topbar({ user, setIsMenuOpen }) {
 
     const [loading, setLoading] = useState(false);
 
+
     const loadAlerts = async () => {
 
         try {
 
             const response = await getAlerts();
+            const normalizedAlerts =
+                Array.isArray(response)
+                    ? response
+                    : Array.isArray(response?.data)
+                        ? response.data
+                        : [];
 
-            setAlerts(response);
+            setAlerts(normalizedAlerts);
 
         } catch (error) {
 
@@ -49,27 +56,36 @@ function Topbar({ user, setIsMenuOpen }) {
             );
 
         }
-
     };
 
+
     useEffect(() => {
+        loadAlerts();
 
-        const timeout = setTimeout(() => {
-            loadAlerts();
-        }, 0);
+        const handleSaleCreated = () => {
 
-        const interval = setInterval(() => {
             loadAlerts();
-        }, 30000);
+
+        };
+
+
+        window.addEventListener(
+            "sale-created",
+            handleSaleCreated
+        );
+
 
         return () => {
 
-            clearTimeout(timeout);
-            clearInterval(interval);
+            window.removeEventListener(
+                "sale-created",
+                handleSaleCreated
+            );
 
         };
 
     }, []);
+
 
     const handleMarkAsRead = async (alertId) => {
 
@@ -81,7 +97,8 @@ function Topbar({ user, setIsMenuOpen }) {
 
             setAlerts((previousAlerts) =>
                 previousAlerts.filter(
-                    (alert) => alert.id !== alertId
+                    (alert) =>
+                        alert.id !== alertId
                 )
             );
 
@@ -99,6 +116,7 @@ function Topbar({ user, setIsMenuOpen }) {
         }
 
     };
+
 
     const handleMarkAllAsRead = async () => {
 
@@ -133,6 +151,7 @@ function Topbar({ user, setIsMenuOpen }) {
 
     };
 
+
     return (
 
         <>
@@ -144,11 +163,14 @@ function Topbar({ user, setIsMenuOpen }) {
                     <button
                         type="button"
                         className="topbar-menu-button"
-                        onClick={() => setIsMenuOpen(true)}
+                        onClick={() =>
+                            setIsMenuOpen(true)
+                        }
                         aria-label="Abrir menú"
                     >
                         <FiMenu />
                     </button>
+
 
                     <div className="topbar-title-text">
 
@@ -163,6 +185,7 @@ function Topbar({ user, setIsMenuOpen }) {
                     </div>
 
                 </div>
+
 
                 <div className="topbar-actions">
 
@@ -195,6 +218,7 @@ function Topbar({ user, setIsMenuOpen }) {
 
             </header>
 
+
             {showNotifications && (
 
                 <NotificationPanel
@@ -202,8 +226,12 @@ function Topbar({ user, setIsMenuOpen }) {
                     onClose={() =>
                         setShowNotifications(false)
                     }
-                    onMarkAsRead={handleMarkAsRead}
-                    onMarkAllAsRead={handleMarkAllAsRead}
+                    onMarkAsRead={
+                        handleMarkAsRead
+                    }
+                    onMarkAllAsRead={
+                        handleMarkAllAsRead
+                    }
                     loading={loading}
                 />
 

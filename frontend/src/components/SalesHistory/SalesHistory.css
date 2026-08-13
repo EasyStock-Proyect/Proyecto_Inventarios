@@ -1,0 +1,127 @@
+.sales-history {
+    overflow: hidden;
+    background: white;
+    border: 1px solid #e0e5dd;
+    border-radius: 22px;
+}
+
+.history-message {
+    min-height: 250px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    border: 1px solid #e0e5dd;
+    border-radius: 22px;
+    color: #666;
+    font-size: 14px;
+}
+
+.history-sale {
+    border-bottom: 1px solid #e4e8e1;
+}
+
+.history-sale:last-child {
+    border-bottom: none;
+}
+
+.history-sale-header {
+    width: 100%;
+    min-height: 52px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 24px;
+    align-items: center;
+    gap: 10px;
+    padding: 0 16px;
+    border: none;
+    background: white;
+    text-align: left;
+    cursor: pointer;
+    color: #222;
+}
+
+.history-sale-header:hover {
+    background: #f7faf5;
+}
+
+.history-sale-header > span,
+.history-sale-header > strong {
+    font-size: 12px;
+}
+
+.history-sale-header > strong {
+    text-align: right;
+}
+
+.items-badge {
+    width: fit-content;
+    padding: 4px 8px;
+    border-radius: 12px;
+    background: #e5f3e3;
+    color: #176b2c;
+}
+
+.history-sale-details {
+    margin: 0 14px 12px;
+    overflow: hidden;
+    border: 1px solid #e5e9e2;
+    border-radius: 14px;
+}
+
+.history-item {
+    min-height: 42px;
+    display: grid;
+    grid-template-columns: 1fr 60px 100px 100px;
+    align-items: center;
+    gap: 10px;
+    padding: 0 14px;
+    border-bottom: 1px solid #e9ece7;
+}
+
+.history-item:last-child {
+    border-bottom: none;
+}
+
+.history-item > div {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.history-item span,
+.history-item strong {
+    font-size: 11px;
+}
+
+.history-item > div span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.history-item > strong {
+    text-align: right;
+}
+
+@media (max-width: 700px) {
+    .history-sale-header {
+        grid-template-columns: 1fr 1fr 24px;
+    }
+
+    .history-sale-header .items-badge {
+        display: none;
+    }
+
+    .history-sale-header > strong {
+        text-align: left;
+    }
+
+    .history-item {
+        grid-template-columns: 1fr 50px 90px;
+    }
+
+    .history-item > strong {
+        display: none;
+    }
+}
