@@ -1,30 +1,21 @@
-import "./Logo.css";
-
-import logo from "../../assets/logo/logo_3.webp";
+import logoFull from "../../assets/logo/logo_full.webp";
+import logoIcon from "../../assets/logo/logo_3.webp";
 
 function Logo({ compact = false }) {
 
     return (
         <div className="logo">
 
-            <div className="logo-circle">
-                <img
-                    src={logo}
-                    alt="EasyStock"
-                    className="logo-image"
-                />
-            </div>
+            <img
+                src={compact ? logoIcon : logoFull}
+                alt="EasyStock"
+                className={compact ? "logo-image-compact" : "logo-image-full"}
+            />
 
             {!compact && (
-                <>
-                    <h1 className="logo-title">
-                        EasyStock
-                    </h1>
-
-                    <p className="logo-subtitle">
-                        Gestión inteligente para tu negocio
-                    </p>
-                </>
+                <p className="logo-subtitle">
+                    Gestión inteligente para tu negocio
+                </p>
             )}
 
         </div>

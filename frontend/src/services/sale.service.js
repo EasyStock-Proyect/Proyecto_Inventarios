@@ -15,8 +15,7 @@ export const createSale = async (data) => {
 export const getSales = async (params = {}) => {
 
     const response = await api.get(
-        "/sales",
-        {
+        "/sales", {
             params
         }
     );

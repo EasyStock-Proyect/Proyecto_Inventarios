@@ -12,25 +12,11 @@ function SalesHistory({
     sales,
     loading
 }) {
+
     const [expandedSale, setExpandedSale] = useState(null);
 
-    if (loading) {
-        return (
-            <div className="history-message">
-                Cargando historial...
-            </div>
-        );
-    }
-
-    if (sales.length === 0) {
-        return (
-            <div className="history-message">
-                No hay ventas registradas.
-            </div>
-        );
-    }
-
     const formatDate = (date) => {
+
         if (!date) {
             return "-";
         }
@@ -43,9 +29,11 @@ function SalesHistory({
                 year: "numeric"
             }
         );
+
     };
 
     const getItems = (sale) => {
+
         if (Array.isArray(sale.items)) {
             return sale.items;
         }
@@ -55,22 +43,53 @@ function SalesHistory({
         }
 
         return [];
+
     };
 
+    const formatCurrency = (value) => {
+
+        return Number(value ?? 0).toLocaleString(
+            "es-CO"
+        );
+
+    };
+
+    if (loading) {
+
+        return (
+            <div className="history-message">
+                Cargando historial...
+            </div>
+        );
+
+    }
+
+    if (sales.length === 0) {
+
+        return (
+            <div className="history-message">
+                No hay ventas registradas.
+            </div>
+        );
+
+    }
+
     return (
+
         <div className="sales-history">
 
             {sales.map((sale) => {
+
                 const items = getItems(sale);
 
                 const isExpanded =
                     expandedSale === sale.id;
 
-                const total = Number(
-                    sale.total ?? 0
-                );
+                const total =
+                    Number(sale.total ?? 0);
 
                 return (
+
                     <div
                         className="history-sale"
                         key={sale.id}
@@ -95,19 +114,20 @@ function SalesHistory({
                             </span>
 
                             <span>
-                                V-{String(sale.id).padStart(4, "0")}
+                                V-{String(
+                                    sale.id
+                                ).padStart(4, "0")}
                             </span>
 
                             <span className="items-badge">
                                 {items.length}{" "}
                                 {items.length === 1
                                     ? "item"
-                                    : "items"
-                                }
+                                    : "items"}
                             </span>
 
                             <strong>
-                                $ {total.toLocaleString("es-CO")}
+                                $ {formatCurrency(total)}
                             </strong>
 
                             {isExpanded ? (
@@ -119,83 +139,103 @@ function SalesHistory({
                         </button>
 
                         {isExpanded && (
+
                             <div className="history-sale-details">
 
-                                {items.map((item, index) => {
+                                {items.length === 0 ? (
 
-                                    const product =
-                                        item.product;
+                                    <div className="history-message">
+                                        Esta venta no tiene productos registrados.
+                                    </div>
 
-                                    const quantity =
-                                        Number(
-                                            item.quantity ?? 0
-                                        );
+                                ) : (
 
-                                    const unitPrice =
-                                        Number(
-                                            item.unitPrice ?? 0
-                                        );
+                                    items.map((item, index) => {
 
-                                    const subtotal =
-                                        Number(
-                                            item.subtotal ??
-                                            quantity * unitPrice
-                                        );
+                                        const product =
+                                            item.product;
 
-                                    return (
-                                        <div
-                                            className="history-item"
-                                            key={
-                                                item.id ??
-                                                index
-                                            }
-                                        >
+                                        const quantity =
+                                            Number(
+                                                item.quantity ?? 0
+                                            );
 
-                                            <div>
-                                                <FiPackage
-                                                    size={16}
-                                                />
+                                        const unitPrice =
+                                            Number(
+                                                item.unitPrice ?? 0
+                                            );
+
+                                        const subtotal =
+                                            Number(
+                                                item.subtotal ??
+                                                quantity *
+                                                unitPrice
+                                            );
+
+                                        return (
+
+                                            <div
+                                                className="history-item"
+                                                key={
+                                                    item.id ??
+                                                    `${sale.id}-${index}`
+                                                }
+                                            >
+
+                                                <div>
+                                                    <FiPackage
+                                                        size={16}
+                                                    />
+
+                                                    <span>
+                                                        {
+                                                            product?.name ??
+                                                            item.productName ??
+                                                            "Producto"
+                                                        }
+                                                    </span>
+                                                </div>
 
                                                 <span>
-                                                    {
-                                                        product?.name ??
-                                                        item.productName ??
-                                                        "Producto"
-                                                    }
+                                                    x{quantity}
                                                 </span>
+
+                                                <span>
+                                                    ${" "}
+                                                    {formatCurrency(
+                                                        unitPrice
+                                                    )}
+                                                </span>
+
+                                                <strong>
+                                                    ${" "}
+                                                    {formatCurrency(
+                                                        subtotal
+                                                    )}
+                                                </strong>
+
                                             </div>
 
-                                            <span>
-                                                x{quantity}
-                                            </span>
+                                        );
 
-                                            <span>
-                                                ${" "}
-                                                {unitPrice.toLocaleString(
-                                                    "es-CO"
-                                                )}
-                                            </span>
+                                    })
 
-                                            <strong>
-                                                ${" "}
-                                                {subtotal.toLocaleString(
-                                                    "es-CO"
-                                                )}
-                                            </strong>
-
-                                        </div>
-                                    );
-                                })}
+                                )}
 
                             </div>
+
                         )}
 
                     </div>
+
                 );
+
             })}
 
         </div>
+
     );
+
 }
 
 export default SalesHistory;

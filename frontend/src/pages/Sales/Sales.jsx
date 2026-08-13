@@ -17,6 +17,8 @@ import Cart from "../../components/Cart/Cart";
 import SalesHistory from "../../components/SalesHistory/SalesHistory";
 import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
 
+import * as XLSX from "xlsx";
+
 import {
     getProducts
 } from "../../services/product.service";
@@ -29,6 +31,12 @@ import {
 
 function Sales() {
     const [loadingHistory, setLoadingHistory] = useState(false);
+
+    const [startDate, setStartDate] = useState("");
+    const [endDate, setEndDate] = useState("");
+
+    const [appliedStartDate, setAppliedStartDate] = useState("");
+    const [appliedEndDate, setAppliedEndDate] = useState("");
 
     const [saleDialog, setSaleDialog] = useState({
         open: false,
@@ -125,38 +133,40 @@ function Sales() {
     );
 
 
-    const loadSalesHistory = useCallback(
-        async () => {
+    const loadSalesHistory = async () => {
 
-            try {
+        try {
 
-                setLoadingHistory(true);
+            setLoadingHistory(true);
 
-                const response = await getSales();
+            const response = await getSales({
+                startDate:
+                    appliedStartDate || undefined,
 
-                setSalesHistory(
-                    normalizeSales(response)
-                );
+                endDate:
+                    appliedEndDate || undefined
+            });
 
-            } catch (error) {
+            setSalesHistory(
+                normalizeSales(response)
+            );
 
-                console.error(
-                    "Error cargando historial:",
-                    error
-                );
+        } catch (error) {
 
-                setSalesHistory([]);
+            console.error(
+                "Error cargando historial:",
+                error
+            );
 
-            } finally {
+            setSalesHistory([]);
 
-                setLoadingHistory(false);
+        } finally {
 
-            }
+            setLoadingHistory(false);
 
-        },
-        []
-    );
+        }
 
+    };
 
     useEffect(() => {
 
@@ -177,17 +187,61 @@ function Sales() {
             return;
         }
 
-        const timeout = setTimeout(() => {
-            loadSalesHistory();
-        }, 0);
+        let isMounted = true;
+
+        const fetchHistory = async () => {
+
+            try {
+
+                setLoadingHistory(true);
+
+                const response = await getSales({
+                    startDate:
+                        appliedStartDate || undefined,
+
+                    endDate:
+                        appliedEndDate || undefined
+                });
+
+                if (!isMounted) {
+                    return;
+                }
+
+                setSalesHistory(
+                    normalizeSales(response)
+                );
+
+            } catch (error) {
+
+                console.error(
+                    "Error cargando historial:",
+                    error
+                );
+
+                if (isMounted) {
+                    setSalesHistory([]);
+                }
+
+            } finally {
+
+                if (isMounted) {
+                    setLoadingHistory(false);
+                }
+
+            }
+
+        };
+
+        void fetchHistory();
 
         return () => {
-            clearTimeout(timeout);
+            isMounted = false;
         };
 
     }, [
         activeTab,
-        loadSalesHistory
+        appliedStartDate,
+        appliedEndDate
     ]);
 
 
@@ -378,6 +432,61 @@ function Sales() {
         0
     );
 
+    const exportSalesToExcel = () => {
+
+        if (salesHistory.length === 0) {
+            return;
+        }
+
+        const rows = salesHistory.map((sale) => {
+
+            const items = Array.isArray(sale.items)
+                ? sale.items
+                : [];
+
+            return {
+                Fecha: new Date(
+                    sale.createdAt
+                ).toLocaleDateString("es-CO"),
+
+                "Número de venta":
+                    `V-${String(sale.id).padStart(4, "0")}`,
+
+                "Items vendidos": items.length,
+
+                Total: Number(sale.total ?? 0)
+            };
+
+        });
+
+        const worksheet =
+            XLSX.utils.json_to_sheet(rows);
+
+        worksheet["!cols"] = [
+            { wch: 16 },
+            { wch: 24 },
+            { wch: 18 },
+            { wch: 16 }
+        ];
+
+        const workbook =
+            XLSX.utils.book_new();
+
+        XLSX.utils.book_append_sheet(
+            workbook,
+            worksheet,
+            "Ventas"
+        );
+
+        const fileName =
+            `ventas-${appliedStartDate || "todas"}-${appliedEndDate || "todas"}.xlsx`;
+
+        XLSX.writeFileXLSX(
+            workbook,
+            fileName
+        );
+    };
+
 
     return (
         <div className="sales-page">
@@ -463,20 +572,85 @@ function Sales() {
 
                         </div>
 
-
                         <button
                             type="button"
                             className="export-button"
+                            onClick={exportSalesToExcel}
+                            disabled={salesHistory.length === 0}
                         >
-
                             <FiDownload size={17} />
-
-                            Exportar CSV
-
+                            Exportar Excel
                         </button>
 
                     </div>
 
+                    <div className="sales-history-filters">
+
+                        <div className="sales-date-field">
+
+                            <label htmlFor="start-date">
+                                Desde
+                            </label>
+
+                            <input
+                                id="start-date"
+                                type="date"
+                                value={startDate}
+                                max={endDate || undefined}
+                                onChange={(event) =>
+                                    setStartDate(event.target.value)
+                                }
+                            />
+
+                        </div>
+
+                        <div className="sales-date-field">
+
+                            <label htmlFor="end-date">
+                                Hasta
+                            </label>
+
+                            <input
+                                id="end-date"
+                                type="date"
+                                value={endDate}
+                                min={startDate || undefined}
+                                onChange={(event) =>
+                                    setEndDate(event.target.value)
+                                }
+                            />
+
+                        </div>
+
+                        <button
+                            type="button"
+                            className="sales-filter-button"
+                            onClick={() => {
+
+                                setAppliedStartDate(startDate);
+                                setAppliedEndDate(endDate);
+
+                            }}
+                        >
+                            Filtrar
+                        </button>
+
+                        <button
+                            type="button"
+                            className="sales-clear-filter-button"
+                            onClick={() => {
+
+                                setStartDate("");
+                                setEndDate("");
+                                setAppliedStartDate("");
+                                setAppliedEndDate("");
+
+                            }}
+                        >
+                            Limpiar
+                        </button>
+
+                    </div>
 
                     <SalesHistory
                         sales={salesHistory}
