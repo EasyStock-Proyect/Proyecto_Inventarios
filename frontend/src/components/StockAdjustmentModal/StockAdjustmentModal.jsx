@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { adjustStock } from "../../services/product.service";
 
@@ -20,6 +20,8 @@ function StockAdjustmentModal({
     onClose,
     onSuccess
 }) {
+
+    const mouseDownInside = useRef(false);
 
     const [quantity, setQuantity] = useState("");
     const [reason, setReason] = useState("ENTRY");
@@ -132,7 +134,20 @@ function StockAdjustmentModal({
 
         <div
             className="stock-adjustment-overlay"
-            onClick={onClose}
+            onMouseDown={(event) => {
+                mouseDownInside.current =
+                    event.target.closest(".stock-adjustment-modal") !== null;
+            }}
+            onClick={(event) => {
+                if (
+                    event.target === event.currentTarget &&
+                    !mouseDownInside.current
+                ) {
+                    onClose();
+                }
+
+                mouseDownInside.current = false;
+            }}
         >
 
             <div

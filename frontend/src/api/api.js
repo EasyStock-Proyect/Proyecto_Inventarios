@@ -1,10 +1,11 @@
 import axios from "axios";
 
 import {
-    getAccessToken,
-    setAccessToken,
-    clearAccessToken
+    clearAccessToken,
+    getAccessToken
 } from "../auth/tokenManager";
+
+import { refreshSession } from "../auth/auth.service";
 
 const api = axios.create({
 
@@ -17,29 +18,6 @@ const api = axios.create({
     withCredentials: true
 
 });
-
-
-let isRefreshing = false;
-let refreshSubscribers = [];
-
-
-const subscribeTokenRefresh = (callback) => {
-
-    refreshSubscribers.push(callback);
-
-};
-
-
-const notifyTokenRefresh = (token) => {
-
-    refreshSubscribers.forEach(
-        (callback) => callback(token)
-    );
-
-    refreshSubscribers = [];
-
-};
-
 
 api.interceptors.request.use((config) => {
 
@@ -55,7 +33,6 @@ api.interceptors.request.use((config) => {
     return config;
 
 });
-
 
 api.interceptors.response.use(
     (response) => response,
@@ -73,46 +50,9 @@ api.interceptors.response.use(
 
         originalRequest._retry = true;
 
-        if (isRefreshing) {
-
-            return new Promise((resolve, reject) => {
-
-                subscribeTokenRefresh((token) => {
-
-                    if (!token) {
-                        reject(error);
-                        return;
-                    }
-
-                    originalRequest.headers.Authorization =
-                        `Bearer ${token}`;
-
-                    resolve(api(originalRequest));
-
-                });
-
-            });
-
-        }
-
-        isRefreshing = true;
-
         try {
 
-            const response = await axios.post(
-                "http://localhost:3000/api/auth/refresh",
-                {},
-                {
-                    withCredentials: true
-                }
-            );
-
-            const newAccessToken =
-                response.data.accessToken;
-
-            setAccessToken(newAccessToken);
-
-            notifyTokenRefresh(newAccessToken);
+            const newAccessToken = await refreshSession();
 
             originalRequest.headers.Authorization =
                 `Bearer ${newAccessToken}`;
@@ -131,10 +71,6 @@ api.interceptors.response.use(
             window.location.href = "/login";
 
             return Promise.reject(refreshError);
-
-        } finally {
-
-            isRefreshing = false;
 
         }
 
