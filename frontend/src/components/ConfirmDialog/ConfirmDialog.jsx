@@ -11,6 +11,7 @@ function ConfirmDialog({
     onConfirm,
     onCancel,
     loading = false,
+    loadingText = "Procesando...",
     type = "confirm"
 }) {
 
@@ -106,7 +107,7 @@ function ConfirmDialog({
                         disabled={loading}
                     >
                         {loading
-                            ? "Eliminando..."
+                            ? loadingText
                             : confirmText}
                     </button>
 

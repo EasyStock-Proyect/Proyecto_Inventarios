@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { AlertCircle, X } from "lucide-react";
 
@@ -38,6 +38,8 @@ function ProductFormModal({
     const [loading, setLoading] = useState(false);
     const [generatingSku, setGeneratingSku] = useState(false);
     const [error, setError] = useState("");
+
+    const mouseDownInside = useRef(false);
 
     useEffect(() => {
 
@@ -202,7 +204,20 @@ function ProductFormModal({
 
         <div
             className="product-form-overlay"
-            onClick={onClose}
+            onMouseDown={(event) => {
+                mouseDownInside.current =
+                    event.target.closest(".product-form-modal") !== null;
+            }}
+            onClick={(event) => {
+                if (
+                    event.target === event.currentTarget &&
+                    !mouseDownInside.current
+                ) {
+                    onClose();
+                }
+
+                mouseDownInside.current = false;
+            }}
         >
 
             <div
