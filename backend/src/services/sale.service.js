@@ -10,131 +10,166 @@ async function createSale(userId, data) {
         );
     }
 
-    return await prisma.$transaction(async (tx) => {
+    return await prisma.$transaction(
+        async (tx) => {
 
-        let total = 0;
+            let total = 0;
 
-        const saleItems = [];
+            const saleItems = [];
 
-        for (const item of items) {
+            for (const item of items) {
 
-            const { productId, quantity } = item;
+                const { productId, quantity, unitPrice } = item;
 
-            if (
-                !productId ||
-                quantity === undefined ||
-                quantity === null
-            ) {
-                throw new Error(
-                    "Cada producto debe tener productId y quantity."
-                );
-            }
-
-            if (
-                !Number.isInteger(quantity) ||
-                quantity <= 0
-            ) {
-                throw new Error(
-                    "La cantidad debe ser un número entero mayor que cero."
-                );
-            }
-
-            const product = await tx.product.findFirst({
-                where: {
-                    id: productId,
-                    userId,
-                    deletedAt: null
+                if (
+                    !productId ||
+                    quantity === undefined ||
+                    quantity === null
+                ) {
+                    throw new Error(
+                        "Cada producto debe tener productId y quantity."
+                    );
                 }
-            });
 
-            if (!product) {
-                throw new Error(
-                    `Producto no encontrado: ${productId}`
-                );
-            }
+                if (
+                    !Number.isInteger(quantity) ||
+                    quantity <= 0
+                ) {
+                    throw new Error(
+                        "La cantidad debe ser un número entero mayor que cero."
+                    );
+                }
 
-            if (product.stockCurrent < quantity) {
-                throw new Error(
-                    `Stock insuficiente para el producto ${product.name}.`
-                );
-            }
+                if (
+                    unitPrice === undefined ||
+                    unitPrice === null
+                ) {
+                    throw new Error(
+                        "Cada producto debe tener productId, quantity y unitPrice."
+                    );
+                }
 
-            const subtotal =
-                Number(product.price) * quantity;
+                const product = await tx.product.findFirst({
+                    where: {
+                        id: productId,
+                        userId,
+                        deletedAt: null
+                    }
+                });
 
-            total += subtotal;
+                if (!product) {
+                    throw new Error(
+                        `Producto no encontrado: ${productId}`
+                    );
+                }
 
-            saleItems.push({
-                product,
-                quantity,
-                subtotal
-            });
-        }
+                if (Number(unitPrice) !== Number(product.price)) {
+                    throw new Error(
+                        `El precio del producto ${product.name} no coincide con el precio actual.`
+                    );
+                }
 
-        const sale = await tx.sale.create({
-            data: {
-                userId,
-                total
-            }
-        });
+                if (product.stockCurrent < quantity) {
+                    throw new Error(
+                        `Stock insuficiente para el producto ${product.name}.`
+                    );
+                }
 
-        for (const item of saleItems) {
+                const subtotal =
+                    Number(product.price) * quantity;
 
-            const {
-                product,
-                quantity,
-                subtotal
-            } = item;
+                total += subtotal;
 
-            await tx.saleItem.create({
-                data: {
-                    saleId: sale.id,
-                    productId: product.id,
+                saleItems.push({
+                    product,
                     quantity,
-                    unitPrice: product.price,
-                    subtotal
-                }
-            });
+                    unitPrice,
+                    subtotal,
+                });
+            }
 
-            const newStock =
-                product.stockCurrent - quantity;
-
-            await tx.product.update({
-                where: {
-                    id: product.id
-                },
+            const sale = await tx.sale.create({
                 data: {
-                    stockCurrent: newStock
+                    userId,
+                    total
                 }
             });
 
-            if (newStock <= product.stockMinimum) {
+            for (const item of saleItems) {
 
-                const existingAlert =
-                    await tx.stockAlert.findFirst({
-                        where: {
-                            productId: product.id,
-                            userId,
-                            isRead: false
+                const {
+                    product,
+                    quantity,
+                    unitPrice,
+                    subtotal
+                } = item;
+
+                await tx.saleItem.create({
+                    data: {
+                        saleId: sale.id,
+                        productId: product.id,
+                        quantity,
+                        unitPrice,
+                        subtotal
+                    }
+                });
+
+                const updatedProduct = await tx.product.updateMany({
+                    where: {
+                        id: product.id,
+                        userId,
+                        deletedAt: null,
+                        stockCurrent: {
+                            gte: quantity
                         }
-                    });
-
-                if (!existingAlert) {
-
-                    await tx.stockAlert.create({
-                        data: {
-                            productId: product.id,
-                            userId,
-                            stockAlert: newStock
+                    },
+                    data: {
+                        stockCurrent: {
+                            decrement: quantity
                         }
-                    });
+                    }
+                });
 
+                if (updatedProduct.count !== 1) {
+                    throw new Error(
+                        `Stock insuficiente para el producto ${product.name}.`
+                    );
+                }
+
+                const newStock =
+                    product.stockCurrent - quantity;
+
+                if (newStock <= product.stockMinimum) {
+
+                    const existingAlert =
+                        await tx.stockAlert.findFirst({
+                            where: {
+                                productId: product.id,
+                                userId,
+                                isRead: false
+                            }
+                        });
+
+                    if (!existingAlert) {
+
+                        await tx.stockAlert.create({
+                            data: {
+                                productId: product.id,
+                                userId,
+                                stockAlert: newStock
+                            }
+                        });
+
+                    }
                 }
             }
-        }
 
-        return sale;
-    });
+            return sale;
+        },
+        {
+            isolationLevel: "Serializable"
+        }
+    );
 }
 
 

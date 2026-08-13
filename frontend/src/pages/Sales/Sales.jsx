@@ -15,6 +15,7 @@ import ProductSearch from "../../components/ProductSearch/ProductSearch";
 import ProductList from "../../components/ProductList/ProductList";
 import Cart from "../../components/Cart/Cart";
 import SalesHistory from "../../components/SalesHistory/SalesHistory";
+import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
 
 import {
     getProducts
@@ -27,6 +28,14 @@ import {
 
 
 function Sales() {
+    const [loadingHistory, setLoadingHistory] = useState(false);
+
+    const [saleDialog, setSaleDialog] = useState({
+        open: false,
+        type: "success",
+        title: "",
+        message: ""
+    });
 
     const [activeTab, setActiveTab] = useState("new");
 
@@ -41,9 +50,6 @@ function Sales() {
 
     const [salesHistory, setSalesHistory] =
         useState([]);
-
-    const [loadingHistory, setLoadingHistory] =
-        useState(false);
 
 
     const normalizeProducts = (response) => {
@@ -306,11 +312,9 @@ function Sales() {
             return;
         }
 
-
         try {
 
             setRegisteringSale(true);
-
 
             const items = cart.map(
                 (item) => ({
@@ -320,25 +324,26 @@ function Sales() {
                 })
             );
 
-
             await createSale({
                 items
             });
 
-
             setCart([]);
-
 
             await searchProducts("");
 
-
             await loadSalesHistory();
-
 
             window.dispatchEvent(
                 new Event("sale-created")
             );
 
+            setSaleDialog({
+                open: true,
+                type: "success",
+                title: "Venta registrada",
+                message: "La venta se registró correctamente."
+            });
 
         } catch (error) {
 
@@ -346,6 +351,15 @@ function Sales() {
                 "Error registrando venta:",
                 error
             );
+
+            setSaleDialog({
+                open: true,
+                type: "error",
+                title: "No se pudo registrar la venta",
+                message:
+                    error.response?.data?.message ||
+                    "Ocurrió un error al registrar la venta."
+            });
 
         } finally {
 
@@ -367,14 +381,6 @@ function Sales() {
 
     return (
         <div className="sales-page">
-
-            <div className="sales-header">
-
-                <h1>
-                    Ventas
-                </h1>
-
-            </div>
 
 
             <SalesTabs
@@ -480,6 +486,28 @@ function Sales() {
                 </section>
 
             )}
+
+            <ConfirmDialog
+                open={saleDialog.open}
+                type={saleDialog.type}
+                title={saleDialog.title}
+                message={saleDialog.message}
+                confirmText="Aceptar"
+                cancelText=""
+                loadingText="Registrando..."
+                onConfirm={() =>
+                    setSaleDialog((current) => ({
+                        ...current,
+                        open: false
+                    }))
+                }
+                onCancel={() =>
+                    setSaleDialog((current) => ({
+                        ...current,
+                        open: false
+                    }))
+                }
+            />
 
         </div>
     );

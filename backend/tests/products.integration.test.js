@@ -222,7 +222,8 @@ describe("Products and Stock - Integration Tests", () => {
                 items: [
                     {
                         productId,
-                        quantity: 3
+                        quantity: 3,
+                        unitPrice: 10000
                     }
                 ]
             });

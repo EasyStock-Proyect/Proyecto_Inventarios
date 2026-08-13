@@ -18,7 +18,8 @@ function createTransactionMock(product = {}) {
                 deletedAt: null,
                 ...product
             }),
-            update: jest.fn()
+            update: jest.fn(),
+            updateMany: jest.fn().mockResolvedValue({ count: 1 })
         },
 
         sale: {
@@ -187,7 +188,8 @@ describe("createSale", () => {
                     items: [
                         {
                             productId: "prod1",
-                            quantity: 2
+                            quantity: 2,
+                            unitPrice: 100
                         }
                     ]
                 }
@@ -215,7 +217,8 @@ describe("createSale", () => {
                     items: [
                         {
                             productId: "prod1",
-                            quantity: 2
+                            quantity: 2,
+                            unitPrice: 100
                         }
                     ]
                 }
@@ -246,7 +249,8 @@ describe("createSale", () => {
                     items: [
                         {
                             productId: "prod1",
-                            quantity: 2
+                            quantity: 2,
+                            unitPrice: 100
                         }
                     ]
                 }
@@ -257,13 +261,20 @@ describe("createSale", () => {
         expect(tx.saleItem.create)
             .toHaveBeenCalled();
 
-        expect(tx.product.update)
+        expect(tx.product.updateMany)
             .toHaveBeenCalledWith({
                 where: {
-                    id: "prod1"
+                    id: "prod1",
+                    userId: "user1",
+                    deletedAt: null,
+                    stockCurrent: {
+                        gte: 2
+                    }
                 },
                 data: {
-                    stockCurrent: 8
+                    stockCurrent: {
+                        decrement: 2
+                    }
                 }
             });
 
@@ -286,7 +297,8 @@ describe("createSale", () => {
                 items: [
                     {
                         productId: "prod1",
-                        quantity: 5
+                        quantity: 5,
+                        unitPrice: 100
                     }
                 ]
             }
@@ -316,7 +328,8 @@ describe("createSale", () => {
                 items: [
                     {
                         productId: "prod1",
-                        quantity: 5
+                        quantity: 5,
+                        unitPrice: 100
                     }
                 ]
             }
@@ -362,11 +375,13 @@ describe("createSale", () => {
                     items: [
                         {
                             productId: "prod1",
-                            quantity: 2
+                            quantity: 2,
+                            unitPrice: 100
                         },
                         {
                             productId: "prod2",
-                            quantity: 3
+                            quantity: 3,
+                            unitPrice: 200
                         }
                     ]
                 }
