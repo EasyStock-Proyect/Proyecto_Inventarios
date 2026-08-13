@@ -33,20 +33,13 @@ function Topbar({ user, setIsMenuOpen }) {
 
     const [loading, setLoading] = useState(false);
 
-
     const loadAlerts = async () => {
 
         try {
 
             const response = await getAlerts();
-            const normalizedAlerts =
-                Array.isArray(response)
-                    ? response
-                    : Array.isArray(response?.data)
-                        ? response.data
-                        : [];
 
-            setAlerts(normalizedAlerts);
+            setAlerts(response);
 
         } catch (error) {
 
@@ -56,26 +49,27 @@ function Topbar({ user, setIsMenuOpen }) {
             );
 
         }
+
     };
 
-
     useEffect(() => {
-        loadAlerts();
+
+        const timeout = setTimeout(() => {
+            loadAlerts();
+        }, 0);
 
         const handleSaleCreated = () => {
-
             loadAlerts();
-
         };
-
 
         window.addEventListener(
             "sale-created",
             handleSaleCreated
         );
 
-
         return () => {
+
+            clearTimeout(timeout);
 
             window.removeEventListener(
                 "sale-created",
@@ -85,7 +79,6 @@ function Topbar({ user, setIsMenuOpen }) {
         };
 
     }, []);
-
 
     const handleMarkAsRead = async (alertId) => {
 
@@ -116,7 +109,6 @@ function Topbar({ user, setIsMenuOpen }) {
         }
 
     };
-
 
     const handleMarkAllAsRead = async () => {
 
@@ -151,7 +143,6 @@ function Topbar({ user, setIsMenuOpen }) {
 
     };
 
-
     return (
 
         <>
@@ -171,7 +162,6 @@ function Topbar({ user, setIsMenuOpen }) {
                         <FiMenu />
                     </button>
 
-
                     <div className="topbar-title-text">
 
                         <span className="business-name">
@@ -185,7 +175,6 @@ function Topbar({ user, setIsMenuOpen }) {
                     </div>
 
                 </div>
-
 
                 <div className="topbar-actions">
 
@@ -218,7 +207,6 @@ function Topbar({ user, setIsMenuOpen }) {
 
             </header>
 
-
             {showNotifications && (
 
                 <NotificationPanel
@@ -226,9 +214,7 @@ function Topbar({ user, setIsMenuOpen }) {
                     onClose={() =>
                         setShowNotifications(false)
                     }
-                    onMarkAsRead={
-                        handleMarkAsRead
-                    }
+                    onMarkAsRead={handleMarkAsRead}
                     onMarkAllAsRead={
                         handleMarkAllAsRead
                     }

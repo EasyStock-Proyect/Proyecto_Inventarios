@@ -33,11 +33,17 @@ function Sales() {
     const [products, setProducts] = useState([]);
     const [cart, setCart] = useState([]);
 
-    const [loadingProducts, setLoadingProducts] = useState(false);
-    const [registeringSale, setRegisteringSale] = useState(false);
+    const [loadingProducts, setLoadingProducts] =
+        useState(false);
 
-    const [salesHistory, setSalesHistory] = useState([]);
-    const [loadingHistory, setLoadingHistory] = useState(false);
+    const [registeringSale, setRegisteringSale] =
+        useState(false);
+
+    const [salesHistory, setSalesHistory] =
+        useState([]);
+
+    const [loadingHistory, setLoadingHistory] =
+        useState(false);
 
 
     const normalizeProducts = (response) => {
@@ -55,6 +61,7 @@ function Sales() {
         }
 
         return [];
+
     };
 
 
@@ -73,6 +80,7 @@ function Sales() {
         }
 
         return [];
+
     };
 
 
@@ -146,7 +154,13 @@ function Sales() {
 
     useEffect(() => {
 
-        searchProducts("");
+        const timeout = setTimeout(() => {
+            searchProducts("");
+        }, 0);
+
+        return () => {
+            clearTimeout(timeout);
+        };
 
     }, [searchProducts]);
 
@@ -157,7 +171,13 @@ function Sales() {
             return;
         }
 
-        loadSalesHistory();
+        const timeout = setTimeout(() => {
+            loadSalesHistory();
+        }, 0);
+
+        return () => {
+            clearTimeout(timeout);
+        };
 
     }, [
         activeTab,
@@ -305,33 +325,18 @@ function Sales() {
                 items
             });
 
-            window.dispatchEvent(
-                new Event("sale-created")
-            );
-
 
             setCart([]);
 
 
-            /*
-             * Actualizar productos inmediatamente
-             * después de registrar la venta.
-             */
             await searchProducts("");
 
 
-            /*
-             * Actualizar historial.
-             */
             await loadSalesHistory();
 
 
-            /*
-             * Avisar al Topbar que se registró una venta.
-             * El Topbar volverá a consultar las alertas.
-             */
             window.dispatchEvent(
-                new CustomEvent("sale-registered")
+                new Event("sale-created")
             );
 
 
@@ -459,7 +464,9 @@ function Sales() {
                         >
 
                             <FiDownload size={17} />
+
                             Exportar CSV
+
                         </button>
 
                     </div>
@@ -476,6 +483,7 @@ function Sales() {
 
         </div>
     );
+
 }
 
 
