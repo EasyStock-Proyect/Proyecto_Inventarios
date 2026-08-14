@@ -1,6 +1,8 @@
 import logoFull from "../../assets/logo/logo_full.webp";
 import logoIcon from "../../assets/logo/logo_3.webp";
 
+import "./Logo.css";
+
 function Logo({ compact = false }) {
 
     return (
