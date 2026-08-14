@@ -162,6 +162,44 @@
     cursor: not-allowed;
 }
 
+
+.sales-pagination, .sales-history-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 16px;
+}
+
+.sales-pagination button, .sales-history-pagination button {
+    min-width: 110px;
+    height: 40px;
+    padding: 0 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--background);
+    color: var(--foreground);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.sales-pagination button:hover:not(:disabled), .sales-history-pagination button:hover:not(:disabled){
+    background: var(--hover);
+}
+
+.sales-pagination button:disabled, .sales-history-pagination button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.sales-pagination span, .sales-history-pagination span {
+    font-size: 13px;
+    color: var(--muted-foreground);
+    white-space: nowrap;
+}
+
 /* Responsive */
 
 /* Ajuste de grid en tablets — NO tocar el margen aquí,

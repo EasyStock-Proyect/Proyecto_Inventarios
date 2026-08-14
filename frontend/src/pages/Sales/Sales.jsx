@@ -28,7 +28,6 @@ import {
     getSales
 } from "../../services/sale.service";
 
-
 function Sales() {
     const [loadingHistory, setLoadingHistory] = useState(false);
 
@@ -44,11 +43,45 @@ function Sales() {
         title: "",
         message: ""
     });
+    const [productsPerPage, setProductsPerPage] = useState(() => {
+
+        const height = window.innerHeight;
+
+        if (height < 750) {
+            return 3;
+        }
+
+        if (height < 900) {
+            return 6;
+        }
+
+        if (height < 1100) {
+            return 8;
+        }
+
+        return 9;
+
+    });
 
     const [activeTab, setActiveTab] = useState("new");
 
     const [products, setProducts] = useState([]);
     const [cart, setCart] = useState([]);
+
+    const [page, setPage] = useState(1);
+    const [pagination, setPagination] = useState({
+        page: 1,
+        totalPages: 1,
+        total: 0
+    });
+
+    const [historyPage, setHistoryPage] = useState(1);
+
+    const [historyPagination, setHistoryPagination] = useState({
+        page: 1,
+        totalPages: 1,
+        total: 0
+    });
 
     const [loadingProducts, setLoadingProducts] =
         useState(false);
@@ -56,8 +89,7 @@ function Sales() {
     const [registeringSale, setRegisteringSale] =
         useState(false);
 
-    const [salesHistory, setSalesHistory] =
-        useState([]);
+    const [salesHistory, setSalesHistory] = useState([]);
 
 
     const normalizeProducts = (response) => {
@@ -106,11 +138,17 @@ function Sales() {
                 setLoadingProducts(true);
 
                 const response = await getProducts({
+                    page,
+                    limit: productsPerPage,
                     search
                 });
 
                 setProducts(
                     normalizeProducts(response)
+                );
+
+                setPagination(
+                    response.pagination
                 );
 
             } catch (error) {
@@ -129,7 +167,7 @@ function Sales() {
             }
 
         },
-        []
+        [page, productsPerPage]
     );
 
 
@@ -140,6 +178,8 @@ function Sales() {
             setLoadingHistory(true);
 
             const response = await getSales({
+                page: historyPage,
+                limit: 10,
                 startDate:
                     appliedStartDate || undefined,
 
@@ -149,6 +189,10 @@ function Sales() {
 
             setSalesHistory(
                 normalizeSales(response)
+            );
+
+            setHistoryPagination(
+                response.pagination
             );
 
         } catch (error) {
@@ -180,14 +224,38 @@ function Sales() {
 
     }, [searchProducts]);
 
+    useEffect(() => {
+
+        const handleResize = () => {
+
+            const height = window.innerHeight;
+
+            if (height < 750) {
+                setProductsPerPage(3);
+            } else if (height < 900) {
+                setProductsPerPage(6);
+            } else if (height < 1100) {
+                setProductsPerPage(8);
+            } else {
+                setProductsPerPage(9);
+            }
+
+        };
+
+        window.addEventListener("resize", handleResize);
+
+        return () => {
+            window.removeEventListener("resize", handleResize);
+        };
+
+    }, []);
+
 
     useEffect(() => {
 
         if (activeTab !== "history") {
             return;
         }
-
-        let isMounted = true;
 
         const fetchHistory = async () => {
 
@@ -196,19 +264,20 @@ function Sales() {
                 setLoadingHistory(true);
 
                 const response = await getSales({
+                    page: historyPage,
+                    limit: 10,
                     startDate:
                         appliedStartDate || undefined,
-
                     endDate:
                         appliedEndDate || undefined
                 });
 
-                if (!isMounted) {
-                    return;
-                }
-
                 setSalesHistory(
                     normalizeSales(response)
+                );
+
+                setHistoryPagination(
+                    response.pagination
                 );
 
             } catch (error) {
@@ -218,15 +287,11 @@ function Sales() {
                     error
                 );
 
-                if (isMounted) {
-                    setSalesHistory([]);
-                }
+                setSalesHistory([]);
 
             } finally {
 
-                if (isMounted) {
-                    setLoadingHistory(false);
-                }
+                setLoadingHistory(false);
 
             }
 
@@ -234,14 +299,11 @@ function Sales() {
 
         void fetchHistory();
 
-        return () => {
-            isMounted = false;
-        };
-
     }, [
         activeTab,
         appliedStartDate,
-        appliedEndDate
+        appliedEndDate,
+        historyPage
     ]);
 
 
@@ -528,6 +590,34 @@ function Sales() {
                             onAdd={addToCart}
                         />
 
+                        <div className="sales-pagination">
+
+                            <button
+                                type="button"
+                                disabled={page <= 1 || loadingProducts}
+                                onClick={() => setPage((currentPage) => currentPage - 1)}
+                            >
+                                ← Anterior
+                            </button>
+
+                            <span>
+                                Página {pagination.page || page} de{" "}
+                                {pagination.totalPages || 1}
+                            </span>
+
+                            <button
+                                type="button"
+                                disabled={
+                                    page >= (pagination.totalPages || 1) ||
+                                    loadingProducts
+                                }
+                                onClick={() => setPage((currentPage) => currentPage + 1)}
+                            >
+                                Siguiente →
+                            </button>
+
+                        </div>
+
                     </section>
 
 
@@ -566,7 +656,7 @@ function Sales() {
                             </h2>
 
                             <p>
-                                {salesHistory.length}{" "}
+                                {historyPagination.total}{" "}
                                 ventas encontradas
                             </p>
 
@@ -626,7 +716,7 @@ function Sales() {
                             type="button"
                             className="sales-filter-button"
                             onClick={() => {
-
+                                setHistoryPage(1);
                                 setAppliedStartDate(startDate);
                                 setAppliedEndDate(endDate);
 
@@ -639,7 +729,7 @@ function Sales() {
                             type="button"
                             className="sales-clear-filter-button"
                             onClick={() => {
-
+                                setHistoryPage(1);
                                 setStartDate("");
                                 setEndDate("");
                                 setAppliedStartDate("");
@@ -653,9 +743,53 @@ function Sales() {
                     </div>
 
                     <SalesHistory
+
                         sales={salesHistory}
                         loading={loadingHistory}
                     />
+                    <div className="sales-history-pagination">
+
+                        <button
+                            type="button"
+                            disabled={
+                                historyPage <= 1 ||
+                                loadingHistory
+                            }
+                            onClick={() =>
+                                setHistoryPage(
+                                    (currentPage) =>
+                                        currentPage - 1
+                                )
+                            }
+                        >
+                            ← Anterior
+                        </button>
+
+                        <span>
+                            Página{" "}
+                            {historyPagination.page || historyPage}
+                            {" "}de{" "}
+                            {historyPagination.totalPages || 1}
+                        </span>
+
+                        <button
+                            type="button"
+                            disabled={
+                                historyPage >=
+                                (historyPagination.totalPages || 1) ||
+                                loadingHistory
+                            }
+                            onClick={() =>
+                                setHistoryPage(
+                                    (currentPage) =>
+                                        currentPage + 1
+                                )
+                            }
+                        >
+                            Siguiente →
+                        </button>
+
+                    </div>
 
                 </section>
 
