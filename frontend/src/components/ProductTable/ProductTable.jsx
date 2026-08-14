@@ -36,6 +36,26 @@ function ProductTable() {
 
     const [page, setPage] = useState(1);
 
+    const [productsPerPage, setProductsPerPage] = useState(() => {
+
+        const height = window.innerHeight;
+
+        if (height < 750) {
+            return 3;
+        }
+
+        if (height < 900) {
+            return 7;
+        }
+
+        if (height < 1100) {
+            return 9;
+        }
+
+        return 10;
+
+    });
+
     const [pagination, setPagination] = useState({
         page: 1,
         limit: 20,
@@ -81,7 +101,7 @@ function ProductTable() {
 
             const response = await getProducts({
                 page,
-                limit: 20,
+                limit: productsPerPage,
                 search,
                 categoryId
             });
@@ -104,7 +124,12 @@ function ProductTable() {
 
         }
 
-    }, [page, search, categoryId]);
+    }, [
+        page,
+        search,
+        categoryId,
+        productsPerPage
+    ]);
 
     useEffect(() => {
 
@@ -128,6 +153,32 @@ function ProductTable() {
         };
 
         initializeCategories();
+
+    }, []);
+
+    useEffect(() => {
+
+        const handleResize = () => {
+
+            const height = window.innerHeight;
+
+            if (height < 750) {
+                setProductsPerPage(3);
+            } else if (height < 900) {
+                setProductsPerPage(7);
+            } else if (height < 1100) {
+                setProductsPerPage(9);
+            } else {
+                setProductsPerPage(10);
+            }
+
+        };
+
+        window.addEventListener("resize", handleResize);
+
+        return () => {
+            window.removeEventListener("resize", handleResize);
+        };
 
     }, []);
 
