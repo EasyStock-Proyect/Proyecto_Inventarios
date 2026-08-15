@@ -23,6 +23,7 @@ import "./ProductTable.css";
 
 import ProductFormModal from "../ProductFormModal/ProductFormModal";
 
+
 function ProductTable() {
 
     const [productModalOpen, setProductModalOpen] = useState(false);
