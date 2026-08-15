@@ -170,7 +170,7 @@ function StockAdjustmentModal({
                     {product.name}
                 </p>
 
-                <p className="product-stock">
+                <p className="product-stock-ajuste">
                     Existencias actuales: {product.stockCurrent} unidades
                 </p>
 
