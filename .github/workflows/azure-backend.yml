@@ -64,6 +64,10 @@ jobs:
           JWT_SECRET: inventarios_secret_2026
           JWT_REFRESH_SECRET: inventarios_refresh_secret_2026
 
+      - name: Prepare deployment artifact
+        run: |
+          rm -rf node_modules
+
       - name: Upload backend artifact
         uses: actions/upload-artifact@v4
         with:
