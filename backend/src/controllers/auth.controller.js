@@ -29,7 +29,7 @@ async function login(req, res, next) {
                 {
                     httpOnly: true,
                     secure: process.env.NODE_ENV === "production",
-                    sameSite: "strict",
+                    sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
                     maxAge: 7 * 24 * 60 * 60 * 1000
                 }
             )
@@ -89,7 +89,7 @@ async function refresh(req, res, next) {
                 {
                     httpOnly: true,
                     secure: process.env.NODE_ENV === "production",
-                    sameSite: "strict",
+                    sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
                     maxAge: 7 * 24 * 60 * 60 * 1000
                 }
             )
@@ -121,7 +121,7 @@ async function logout(req, res, next) {
                 {
                     httpOnly: true,
                     secure: process.env.NODE_ENV === "production",
-                    sameSite: "strict"
+                    sameSite: process.env.NODE_ENV === "production" ? "none" : "strict"
                 }
             )
             .status(200)
