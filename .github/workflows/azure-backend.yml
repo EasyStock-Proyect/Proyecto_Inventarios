@@ -16,16 +16,31 @@ jobs:
     permissions:
       contents: read
 
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: admin
+          POSTGRES_DB: inventarios_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d inventarios_db"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     defaults:
       run:
         working-directory: backend
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: "24.x"
           cache: "npm"
@@ -37,8 +52,17 @@ jobs:
       - name: Generate Prisma Client
         run: npx prisma generate
 
+      - name: Prepare test database
+        run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: postgresql://postgres:admin@localhost:5432/inventarios_db
+
       - name: Run tests
         run: npm test
+        env:
+          DATABASE_URL: postgresql://postgres:admin@localhost:5432/inventarios_db
+          JWT_SECRET: inventarios_secret_2026
+          JWT_REFRESH_SECRET: inventarios_refresh_secret_2026
 
       - name: Upload backend artifact
         uses: actions/upload-artifact@v4
