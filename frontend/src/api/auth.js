@@ -1,48 +1,37 @@
-const API_URL = "http://localhost:3000/api/auth";
+import api from "./api";
 
 export async function login(data) {
 
-    const response = await fetch(
-        `${API_URL}/login`,
-        {
-            method: "POST",
+    try {
 
-            headers: {
-                "Content-Type": "application/json"
-            },
+        const response = await api.post("/auth/login", data);
 
-            credentials: "include",
+        return response.data;
 
-            body: JSON.stringify(data)
-        }
-    );
+    } catch (error) {
 
-    const result =
-        await response.json();
+        const message = error.response?.data?.message || error.message;
 
-    if (!response.ok) {
-        throw new Error(result.message);
+        throw new Error(message);
+
     }
-
-    return result;
 
 }
 
 export async function register(data) {
 
-    const response = await fetch(`${API_URL}/register`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-    });
+    try {
 
-    const result = await response.json();
+        const response = await api.post("/auth/register", data);
 
-    if (!response.ok) {
-        throw new Error(result.message);
+        return response.data;
+
+    } catch (error) {
+
+        const message = error.response?.data?.message || error.message;
+
+        throw new Error(message);
+
     }
 
-    return result;
 }
