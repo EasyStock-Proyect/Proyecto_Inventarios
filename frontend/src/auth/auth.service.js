@@ -1,4 +1,4 @@
-import axios from "axios";
+import api from "../api/api";
 
 import {
     clearAccessToken,
@@ -13,13 +13,7 @@ export const refreshSession = async () => {
         return refreshPromise;
     }
 
-    refreshPromise = axios.post(
-        "http://localhost:3000/api/auth/refresh",
-        {},
-        {
-            withCredentials: true
-        }
-    )
+    refreshPromise = api.post("/auth/refresh", {})
         .then((response) => {
             const accessToken = response.data.accessToken;
 
@@ -56,13 +50,7 @@ export const logout = async () => {
 
     try {
 
-        await axios.post(
-            "http://localhost:3000/api/auth/logout",
-            {},
-            {
-                withCredentials: true
-            }
-        );
+        await api.post("/auth/logout", {});
 
     } catch (error) {
 
