@@ -10,7 +10,8 @@
     "seed": "npx prisma db seed",
     "migrate": "npx prisma migrate dev",
     "studio": "npx prisma studio",
-    "test": "jest --coverage"
+    "test": "jest --coverage",
+    "postinstall": "prisma generate"
   },
   "keywords": [],
   "author": "",
