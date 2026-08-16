@@ -12,7 +12,7 @@ export async function login(data) {
 
         const message = error.response?.data?.message || error.message;
 
-        throw new Error(message);
+        throw new Error(message, { cause: error });
 
     }
 
@@ -30,7 +30,7 @@ export async function register(data) {
 
         const message = error.response?.data?.message || error.message;
 
-        throw new Error(message);
+        throw new Error(message, { cause: error });
 
     }
 
