@@ -77,6 +77,12 @@ async function refresh(req, res, next) {
 
         const refreshToken = req.cookies.refreshToken;
 
+        if (!refreshToken) {
+            return res.status(401).json({
+                message: "Sesión no encontrada"
+            });
+        }
+
         const tokens =
             await authService.refreshSession(
                 refreshToken
@@ -90,6 +96,7 @@ async function refresh(req, res, next) {
                     httpOnly: true,
                     secure: process.env.NODE_ENV === "production",
                     sameSite: process.env.NODE_ENV === "production" ? "lax" : "strict",
+                    path: "/",
                     maxAge: 7 * 24 * 60 * 60 * 1000
                 }
             )
