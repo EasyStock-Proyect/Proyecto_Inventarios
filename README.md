@@ -1,840 +1,382 @@
-# Proyecto_Inventarios
+# Proyecto Inventarios / Easy Stock
 
-## Descripción
+Sistema web para la gestión de inventarios y ventas dirigido a pequeños comercios. El proyecto integra una interfaz web, una API REST, persistencia en PostgreSQL y un módulo independiente de preparación de datos de ventas para futuras tareas de análisis y predicción de demanda.
 
-Proyecto académico para el desarrollo de un sistema inteligente de gestión de inventarios y análisis de ventas, orientado a pequeños y medianos comercios. El sistema permitirá administrar productos, controlar existencias, registrar ventas y generar información útil para la toma de decisiones.
+## Descripción del proyecto
 
----
+El sistema centraliza la administración de productos, categorías y existencias, y permite registrar ventas asociadas a los productos del inventario. La aplicación incluye autenticación de usuarios, control de acceso a las operaciones protegidas, seguimiento de movimientos de stock y alertas cuando las existencias alcanzan el mínimo configurado.
 
-## Tecnologías
+El objetivo general es ofrecer una base operativa para que pequeños comercios puedan consultar y actualizar su inventario, registrar sus ventas y obtener información agrupada sobre el comportamiento de estas. La preparación de datos ML se ejecuta actualmente como un proceso independiente y no como una funcionalidad predictiva integrada en la aplicación web.
+
+## Estado actual
+
+El sistema cuenta con módulos funcionales de autenticación, inventario, categorías, ventas, alertas y reportes de ventas en el backend. En el frontend, las pantallas de inventario y ventas consumen la API; el dashboard, ajustes y predicción tienen actualmente contenido en desarrollo. El módulo ML prepara un archivo CSV a partir del historial de ventas, pero todavía no implementa modelos, entrenamiento, predicciones ni una API de predicción.
+
+## Arquitectura general
+
+```text
+                 HTTP / JSON
+Frontend React + Vite ---------> Backend Node.js + Express
+                                      |
+                                      v
+                                 Prisma ORM
+                                      |
+                                      v
+                                  PostgreSQL
+
+Módulo ML independiente --------> PostgreSQL
+                                      |
+                                      v
+                              Preparación de datos
+                                      |
+                                      v
+                       data/processed/sales_time_series.csv
+```
+
+El frontend se comunica con el backend mediante la API bajo el prefijo `/api`. El módulo ML no está conectado al backend ni al frontend: consulta PostgreSQL directamente y genera un CSV local. Actualmente no existe una API de predicciones integrada con la interfaz web.
+
+### Capas principales
+
+- **Frontend:** aplicación React construida con Vite. Gestiona las vistas, la navegación, los formularios y las llamadas HTTP.
+- **Backend:** API REST construida con Node.js y Express. Organiza las rutas, controladores, servicios y middlewares.
+- **Persistencia:** Prisma Client se utiliza como ORM sobre PostgreSQL.
+- **Autenticación:** el access token JWT se envía en el encabezado `Authorization`. El refresh token se mantiene en una cookie HTTP-only y permite restaurar o renovar la sesión.
+- **ML:** proceso Python independiente que extrae y normaliza el historial de ventas para producir series diarias.
+
+## Estructura del proyecto
+
+Se muestran las carpetas y archivos principales; se omiten dependencias instaladas, entornos virtuales, reportes de cobertura y otros archivos generados.
+
+```text
+Proyecto_Inventarios/
+├── .github/
+│   └── workflows/
+│       ├── backend-test.yml
+│       ├── frontend-test.yml
+│       └── azure-backend.yml
+├── backend/
+│   ├── src/
+│   │   ├── config/
+│   │   ├── controllers/
+│   │   ├── middlewares/
+│   │   ├── routes/
+│   │   ├── services/
+│   │   └── utils/
+│   ├── prisma/
+│   │   ├── migrations/
+│   │   ├── schema.prisma
+│   │   └── seed.js
+│   ├── tests/
+│   ├── index.js
+│   ├── jest.config.js
+│   └── package.json
+├── frontend/
+│   ├── public/
+│   ├── src/
+│   │   ├── api/
+│   │   ├── assets/
+│   │   ├── auth/
+│   │   ├── components/
+│   │   ├── layouts/
+│   │   ├── pages/
+│   │   ├── routes/
+│   │   ├── services/
+│   │   ├── App.jsx
+│   │   ├── index.css
+│   │   └── main.jsx
+│   └── package.json
+├── ml/
+│   ├── src/
+│   │   ├── config.py
+│   │   ├── database.py
+│   │   └── data_preparation.py
+│   ├── scripts/
+│   │   └── prepare_sales_data.py
+│   ├── data/
+│   │   └── processed/
+│   ├── requirements.txt
+│   └── README.md
+├── docs/
+├── inventarios_data.sql
+├── inventarios_data_clean.sql
+└── README.md
+```
+
+### Backend
+
+- `src/controllers/`: recibe las solicitudes HTTP y construye las respuestas para autenticación, productos, categorías, ventas, alertas y reportes.
+- `src/services/`: contiene la lógica de negocio y las operaciones sobre Prisma.
+- `src/routes/`: registra los endpoints bajo `/api` y aplica el middleware de autenticación a las rutas protegidas.
+- `src/middlewares/`: incluye la validación del access token y el manejo centralizado de errores.
+- `src/utils/`: utilidades para JWT y hash de contraseñas.
+- `src/config/`: instancia y configura el cliente de Prisma.
+- `prisma/`: esquema PostgreSQL, migraciones y script de datos iniciales.
+- `tests/`: pruebas unitarias de servicios, controladores y middlewares, además de una prueba de integración de productos.
 
 ### Frontend
 
-- React
-- Vite
-- JavaScript
-- ESLint
-- Vitest
+- `src/api/`: cliente HTTP y operaciones de autenticación.
+- `src/auth/`: contexto, proveedor, recuperación de sesión y administración del access token.
+- `src/components/`: componentes reutilizables de formularios, productos, carrito, ventas, navegación, alertas y diálogos.
+- `src/layouts/`: layout principal de la aplicación.
+- `src/pages/`: vistas de login, registro, dashboard, inventario, ventas, predicción y ajustes.
+- `src/routes/`: enrutamiento de la aplicación y protección de rutas mediante `ProtectedRoute`.
+- `src/services/`: funciones de acceso a productos, categorías, ventas y alertas.
+- `src/assets/`: fuentes, iconos y logotipos.
+
+### ML
+
+- `src/config.py`: carga y valida `DATABASE_URL` mediante `python-dotenv`.
+- `src/database.py`: conecta a PostgreSQL con Psycopg 3 y obtiene el historial agrupado por producto y día desde `sale` y `sale_item`.
+- `src/data_preparation.py`: normaliza fechas y cantidades, agrupa los datos y completa con cero los días sin ventas.
+- `scripts/prepare_sales_data.py`: punto de entrada del pipeline y generador del CSV procesado.
+- `data/processed/`: almacena resultados generados; los datasets no se versionan y la carpeta se conserva con `.gitkeep`.
+- `requirements.txt`: dependencias Python del módulo.
+
+## Tecnologías utilizadas
 
 ### Backend
 
 - Node.js
 - Express
-- MySQL
 - Prisma ORM
-- JWT
+- PostgreSQL
+- JSON Web Tokens (JWT)
 - bcrypt
+- cookie-parser
+- cors
+- Jest
+- Supertest
 
-### Control de versiones
+### Frontend
 
-- Git
-- GitHub
-- GitHub Actions (CI)
+- React
+- Vite
+- Axios
+- React Router
+- Lucide React
+- React Icons
+- xlsx
+- CSS
+- Vitest
+- Testing Library
 
----
+### ML
 
-## Requisitos
+- Python
+- pandas
+- Psycopg 3
+- python-dotenv
 
-Antes de ejecutar el proyecto asegúrate de tener instalado:
+### Integración y entrega
 
-- Node.js 22 o superior
-- npm
-- Git
+- GitHub Actions
+- PostgreSQL como servicio en los workflows de validación
+- Azure App Service para el workflow de despliegue del backend
 
----
+No existe actualmente una configuración de Docker propia en el repositorio.
 
-## Clonar el repositorio
+## Funcionalidades actuales
 
-```bash
-git clone https://github.com/Pablobenavide/Proyecto_Inventarios.git
+### Autenticación
+
+- Registro de usuarios con nombre y tipo de negocio, correo y contraseña.
+- Inicio de sesión con access token JWT.
+- Emisión y rotación de refresh tokens persistidos en PostgreSQL.
+- Almacenamiento del refresh token en cookie HTTP-only.
+- Renovación automática del access token cuando una solicitud recibe una respuesta `401`.
+- Restauración de sesión al cargar el frontend.
+- Cierre de sesión y revocación del refresh token.
+- Protección de rutas y endpoints mediante autenticación.
+
+### Inventario y categorías
+
+- Creación, consulta, actualización y eliminación lógica de productos.
+- Generación de SKU por categoría.
+- Búsqueda de productos por nombre o SKU.
+- Filtrado por categoría.
+- Paginación de productos.
+- Gestión de precio, stock actual, stock mínimo y categoría.
+- Ajustes de stock con cantidad, dirección, motivo y notas.
+- Consulta del historial de movimientos de stock.
+- Creación y consulta de alertas de stock.
+- Marcado de alertas como leídas.
+- Creación, consulta, actualización y eliminación de categorías.
+
+### Ventas
+
+- Registro de ventas con uno o más productos.
+- Validación de producto, cantidad, precio y stock disponible.
+- Actualización transaccional del stock después de registrar una venta.
+- Generación de alertas cuando el stock queda en el mínimo configurado o por debajo de este.
+- Consulta paginada del historial de ventas.
+- Filtros opcionales del historial por fecha inicial y final.
+- Consulta de productos para construir el carrito de venta.
+- Exportación del historial de ventas desde el frontend a formato XLSX.
+
+### Reportes
+
+El backend dispone de un endpoint protegido para reportes de ventas. Permite consultar un periodo opcional y agrupar los resultados por día, semana o mes. El reporte calcula el total de ventas, los ingresos, los productos más vendidos y los datos agrupados por periodo.
+
+El dashboard del frontend todavía se encuentra en desarrollo, por lo que estos datos no se presentan actualmente en un tablero implementado.
+
+### Vistas en desarrollo
+
+- `Dashboard`: muestra el acceso inicial y una indicación de que la pantalla está en desarrollo.
+- `Ajustes`: muestra una indicación de que la configuración del negocio está en desarrollo.
+- `Predicción`: muestra que el módulo de predicción está en desarrollo; no consume el módulo ML ni ejecuta predicciones.
+
+## Módulo de preparación de datos ML
+
+La US-21 corresponde a la preparación del historial de ventas para dejar un dataset diario, consistente y reutilizable en futuras tareas de análisis de demanda.
+
+Actualmente, el módulo:
+
+- Consulta PostgreSQL relacionando las tablas `sale` y `sale_item`.
+- Extrae `productId`, fecha de venta y cantidad vendida.
+- Agrupa las cantidades por producto y día.
+- Normaliza las fechas y convierte `quantity_sold` a valores numéricos.
+- Completa con `0` los días sin ventas.
+- Permite filtrar el intervalo con `--start` y `--end` en formato `YYYY-MM-DD`.
+- Genera `ml/data/processed/sales_time_series.csv` con las columnas exactas `productId,date,quantity_sold`.
+
+Los modelos predictivos, el entrenamiento, las predicciones y la integración con el frontend no están implementados.
+
+### Ejecución del pipeline ML
+
+Desde la raíz del repositorio:
+
+```powershell
+cd ml
+python scripts/prepare_sales_data.py
 ```
 
-Entrar al proyecto:
+También se puede indicar un rango completo o uno de sus límites:
 
-```bash
-cd Proyecto_Inventarios
+```powershell
+python scripts/prepare_sales_data.py --start 2026-08-01 --end 2026-08-20
+python scripts/prepare_sales_data.py --start 2026-08-01
+python scripts/prepare_sales_data.py --end 2026-08-20
 ```
 
----
+Si se proporcionan ambos límites y la fecha inicial es posterior a la fecha final, el proceso genera un error de validación. Sin un rango, cada producto se completa desde su primera hasta su última venta disponible.
 
-# Configuración del Frontend
+## Requisitos e instalación
 
-Ingresar a la carpeta:
+### Requisitos generales
 
-```bash
-cd frontend
-```
+- Node.js 22 o una versión compatible con los paquetes del proyecto.
+- npm.
+- Python 3.14 o una versión compatible con las dependencias del módulo ML.
+- PostgreSQL accesible.
 
-Instalar dependencias:
+### Backend
 
-```bash
+Desde `backend/`:
+
+```powershell
 npm install
-```
-
-Crear el archivo de variables de entorno:
-
-```bash
-cp .env.example .env
-```
-
-> En Windows (CMD):
-
-```cmd
-copy .env.example .env
-```
-
-Modificar las variables según el entorno de desarrollo.
-
----
-
-## Ejecutar el proyecto
-
-```bash
+npx prisma generate
+npx prisma migrate dev
+npx prisma db seed
 npm run dev
 ```
 
----
+El backend utiliza `DATABASE_URL`, `JWT_SECRET`, `JWT_REFRESH_SECRET` y, opcionalmente, `FRONTEND_URL`. La base de datos debe ser PostgreSQL y las migraciones se encuentran en `backend/prisma/migrations/`.
 
-## Ejecutar ESLint
+Scripts disponibles:
 
-```bash
-npm run lint
+```text
+npm start       Inicia el servidor
+npm run dev     Inicia el servidor con Nodemon
+npm test        Ejecuta Jest con cobertura
+npm run seed    Ejecuta el seed de Prisma
+npm run migrate Ejecuta las migraciones en desarrollo
+npm run studio  Abre Prisma Studio
 ```
 
----
+### Frontend
 
-## Ejecutar pruebas
+Desde `frontend/`:
 
-```bash
+```powershell
+npm install
+npm run dev
+```
+
+El frontend utiliza `VITE_API_URL` para configurar la URL base de la API. Si no se define, el cliente utiliza `/api`.
+
+Scripts disponibles:
+
+```text
+npm run dev      Inicia Vite
+npm run build    Genera la compilación de producción
+npm run lint     Ejecuta ESLint
+npm test         Ejecuta las pruebas con Vitest
+npm run preview  Sirve la compilación generada
+```
+
+### ML
+
+Desde `ml/`, se recomienda crear un entorno virtual e instalar las dependencias:
+
+```powershell
+py -3.14 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+```
+
+Crea `ml/.env` a partir de `ml/.env.example` y configura `DATABASE_URL`. El archivo `.env` no debe subirse al repositorio.
+
+## Base de datos
+
+El esquema de Prisma define las siguientes entidades principales:
+
+- `User`
+- `RefreshToken`
+- `Category`
+- `Product`
+- `Sale`
+- `SaleItem`
+- `StockMovement`
+- `StockAlert`
+
+Las relaciones, restricciones y nombres de tablas se encuentran en `backend/prisma/schema.prisma`. Las migraciones versionadas están en `backend/prisma/migrations/` y los datos iniciales de desarrollo en `backend/prisma/seed.js`.
+
+## Pruebas
+
+### Backend
+
+Las pruebas del backend utilizan Jest y Supertest. Cubren servicios, controladores, middlewares y una integración de productos. Se ejecutan desde `backend/`:
+
+```powershell
 npm test
 ```
 
----
+### Frontend
 
-## Integración Continua (CI)
+Las pruebas del frontend utilizan Vitest y Testing Library. Se ejecutan desde `frontend/`:
 
-El proyecto utiliza **GitHub Actions** para ejecutar automáticamente:
-
-- ESLint
-- Pruebas con Vitest
-
-Cada Pull Request hacia las ramas protegidas ejecuta el pipeline de integración continua antes de permitir la fusión de cambios.
-
----
-
-## Variables de entorno
-
-Las variables necesarias se encuentran documentadas en:
-
-```text
-frontend/.env.example
+```powershell
+npm test
 ```
 
-Cada desarrollador debe crear un archivo:
+También se puede revisar el código con:
 
-```text
-frontend/.env
+```powershell
+npm run lint
 ```
 
-a partir del archivo de ejemplo.
+## Integración continua y despliegue
 
----
+El repositorio contiene los siguientes workflows de GitHub Actions:
 
-## Estructura del proyecto
+- `backend-test.yml`: en pull requests hacia `main` o `develop`, instala el backend, genera el cliente Prisma, prepara una base PostgreSQL de pruebas con las migraciones y ejecuta Jest.
+- `frontend-test.yml`: en pull requests hacia `main` o `develop`, instala el frontend, ejecuta ESLint y ejecuta las pruebas de Vitest.
+- `azure-backend.yml`: en pushes a `main` que afecten `backend/` o el propio workflow, y mediante ejecución manual, valida el backend, crea un artefacto y lo despliega en Azure App Service.
 
-```text
-Proyecto_Inventarios/
-│
-├── .github/
-│   └── workflows/
-│       └── ci.yml
-│
-├── frontend/
-│   ├── src/
-│   ├── public/
-│   ├── package.json
-│   ├── .env.example
-│   └── ...
-│
-├── backend/          (En desarrollo)
-│
-├── README.md
-│
-└── .gitignore
-```
+El workflow de Azure requiere los secretos de GitHub configurados para el inicio de sesión federado en Azure: `AZURE_CLIENT_ID`, `AZURE_TENANT_ID` y `AZURE_SUBSCRIPTION_ID`.
 
----
+## Documentación adicional
 
-## Flujo de trabajo
-
-El proyecto utiliza el siguiente flujo de ramas:
-
-- **develop** → Rama principal de desarrollo donde se integran los cambios.
-- **main** → Rama estable que contiene las versiones listas para producción o entrega.
-
-Los cambios se realizan sobre la rama **develop** y posteriormente se integran a **main** mediante un **Pull Request**.
-
-Antes de aprobar un Pull Request, GitHub Actions ejecuta automáticamente:
-
-- ESLint (`npm run lint`)
-- Pruebas (`npm test`)
-
-Solo si las verificaciones son exitosas y el Pull Request es aprobado, los cambios pueden fusionarse con la rama protegida.
-
----
-
-# Configuración del Backend
-
-Ingresar a la carpeta del backend:
-
-```bash
-cd backend
-```
-
-Instalar dependencias:
-
-```bash
-npm install
-```
-
----
-
-## Crear la base de datos
-
-Crear una base de datos en MySQL:
-
-```sql
-CREATE DATABASE inventarios_db;
-```
-
----
-
-## Variables de entorno
-
-Crear el archivo:
-
-```text
-backend/.env
-```
-
-Agregar la cadena de conexión:
-
-```env
-DATABASE_URL="mysql://USUARIO:CONTRASEÑA@localhost:3306/inventarios_db"
-```
-
-Ejemplo:
-
-```env
-DATABASE_URL="mysql://root:admin@localhost:3306/inventarios_db"
-```
-
----
-
-# Prisma ORM
-
-El backend utiliza **Prisma ORM** para el modelado, versionado y administración de la base de datos.
-
----
-
-## Generar el cliente de Prisma
-
-```bash
-npx prisma generate
-```
-
----
-
-## Ejecutar migraciones
-
-Aplicar las migraciones existentes:
-
-```bash
-npx prisma migrate dev
-```
-
-Crear una nueva migración:
-
-```bash
-npx prisma migrate dev --name nombre_de_la_migracion
-```
-
-Ejemplo:
-
-```bash
-npx prisma migrate dev --name add_product_barcode
-```
-
----
-
-## Ejecutar los datos de prueba (Seed)
-
-```bash
-npx prisma db seed
-```
-
-Este comando inserta datos iniciales para facilitar el desarrollo y las pruebas.
-
----
-
-## Reiniciar la base de datos
-
-En caso de necesitar reconstruir completamente la base de datos:
-
-```bash
-npx prisma migrate reset
-```
-
-Este comando:
-
-- Elimina la base de datos.
-- Ejecuta nuevamente todas las migraciones.
-- Ejecuta automáticamente el Seed.
-
----
-
-## Prisma Studio
-
-Para visualizar y administrar la base de datos desde una interfaz gráfica:
-
-```bash
-npx prisma studio
-```
-
----
-
-# Modelo de Base de Datos
-
-Actualmente el sistema cuenta con las siguientes entidades:
-
-- User
-- Category
-- Product
-- Sale
-- SaleItem
-- StockAlert
-
-El modelo se encuentra definido en:
-
-```text
-backend/prisma/schema.prisma
-```
-
----
-
-# Migraciones
-
-Todas las modificaciones del esquema quedan registradas automáticamente en:
-
-```text
-backend/prisma/migrations
-```
-
-Esto garantiza que cualquier desarrollador pueda recrear exactamente la misma base de datos ejecutando las migraciones.
-
----
-
-# Seeds
-
-Los datos de prueba se encuentran en:
-
-```text
-backend/prisma/seed.js
-```
-
-Estos permiten poblar automáticamente la base de datos para realizar pruebas y desarrollo.
-
----
-
-# Variables de entorno
-
-## Frontend
-
-```text
-frontend/.env.example
-```
-
-Crear:
-
-```text
-frontend/.env
-```
-
----
-
-## Backend
-
-```text
-backend/.env
-```
-
-Debe contener:
-
-```env
-DATABASE_URL="mysql://USUARIO:CONTRASEÑA@localhost:3306/inventarios_db"
-```
-
----
-
-# Estructura del proyecto
-
-```text
-Proyecto_Inventarios/
-│
-├── .github/
-│   └── workflows/
-│       └── ci.yml
-│
-├── frontend/
-│   ├── src/
-│   ├── public/
-│   ├── package.json
-│   ├── .env.example
-│   └── ...
-│
-├── backend/
-│   ├── prisma/
-│   │   ├── migrations/
-│   │   ├── schema.prisma
-│   │   └── seed.js
-│   │
-│   ├── prisma.config.ts
-│   ├── package.json
-│   ├── .env
-│   └── ...
-│
-├── README.md
-│
-└── .gitignore
-```
-
----
-
-# Funcionalidades implementadas del Backend
-
-- Configuración inicial de **Prisma ORM**.
-- Conexión a **MySQL** mediante variables de entorno.
-- Esquema de base de datos versionado mediante migraciones.
-- Modelado de las entidades:
-  - User
-  - Category
-  - Product
-  - Sale
-  - SaleItem
-  - StockAlert
-- Datos de prueba mediante **Prisma Seed**.
-- Administración visual de la base de datos con **Prisma Studio**.
-- Reconstrucción de la base de datos mediante migraciones (`prisma migrate reset`).
-- API REST para gestión de categorías.
-- API REST para gestión de productos.
-- Validación de categorías asociadas a productos.
-- Eliminación lógica de productos mediante campo `deletedAt`.
-- Paginación y filtros en consulta de productos.
-
----
-
-# Módulo de Autenticación
-
-Se implementó el sistema de autenticación del proyecto mediante una arquitectura cliente-servidor, permitiendo el registro e inicio de sesión de usuarios.
-
----
-
-# Módulo de Categorías
-
-Se implementó el CRUD de categorías para permitir a los comerciantes organizar sus productos por diferentes tipos, como bebidas, papelería o aseo.
-
-## Funcionalidades
-
-- Creación de categorías.
-- Consulta de categorías.
-- Actualización de categorías.
-- Eliminación de categorías.
-- Validación de nombres duplicados por comerciante.
-- Límite máximo de 50 categorías por usuario.
-- Protección mediante autenticación JWT.
-
-## Reglas de negocio
-
-- Cada categoría pertenece únicamente a un comerciante.
-- No se permite crear categorías con nombres repetidos dentro del mismo negocio.
-- Una categoría con productos asociados no puede ser eliminada.
-
----
-
-
-# Módulo de Productos
-
-Se implementó la gestión completa de productos mediante API REST, permitiendo administrar el catálogo del comerciante y mantener actualizado el inventario.
-
-## Funcionalidades
-
-- Creación de productos.
-- Listado de productos.
-- Actualización parcial de productos.
-- Eliminación lógica mediante `deletedAt`.
-- Asociación con categorías.
-- Validación de SKU único.
-- Búsqueda por nombre.
-- Filtro por categoría.
-- Paginación de resultados.
-- Protección mediante JWT.
-
-
----
-
-## Frontend
-
-Se desarrollaron las siguientes vistas:
-
-- Pantalla de inicio de sesión (Login).
-- Pantalla de registro (Register).
-- Dashboard temporal para validar el acceso al sistema.
-
-### Características implementadas
-
-- Diseño responsive para dispositivos móviles y escritorio.
-- Validación de formularios en el cliente.
-- Validación de formato de correo electrónico.
-- Validación de longitud mínima de contraseña.
-- Confirmación de contraseña durante el registro.
-- Visualización y ocultamiento de la contraseña.
-- Componentización de la interfaz mediante componentes reutilizables.
-- Consumo de la API utilizando Axios.
-- Manejo de mensajes de error provenientes del backend.
-- Redirección al Dashboard después de un inicio de sesión exitoso.
-
----
-
-## Componentes desarrollados
-
-Se implementaron componentes reutilizables para facilitar el mantenimiento de la interfaz:
-
-- Button
-- Input
-- PasswordInput
-- Tabs
-- Logo
-- Footer
-- AuthLink
-
----
-
-# Backend
-
-Se implementó la API de autenticación utilizando Express y Prisma ORM.
-
-### Funcionalidades
-
-- Registro de usuarios.
-- Inicio de sesión.
-- Validación de usuarios existentes.
-- Hash de contraseñas mediante bcrypt.
-- Generación de Access Token y Refresh Token utilizando JWT.
-- Validación de credenciales.
-
----
-
-# Endpoints implementados
-
-## Registrar usuario
-
-```http
-POST /auth/register
-```
-
-Body
-
-```json
-{
-    "businessName": "Mi Negocio",
-    "businessType": "Tienda",
-    "email": "correo@correo.com",
-    "password": "12345678"
-}
-```
-
-Respuesta
-
-```json
-{
-    "message": "Usuario registrado correctamente"
-}
-```
-
----
-
-## Iniciar sesión
-
-```http
-POST /auth/login
-```
-
-Body
-
-```json
-{
-    "email": "correo@correo.com",
-    "password": "12345678"
-}
-```
-
-Respuesta
-
-```json
-{
-    "accessToken": "...",
-    "refreshToken": "..."
-}
-```
-
----
-
-# Flujo de autenticación
-
-1. El usuario completa el formulario de registro.
-2. El frontend valida la información ingresada.
-3. La información es enviada a la API.
-4. El backend verifica si el correo ya existe.
-5. La contraseña es cifrada utilizando bcrypt.
-6. El usuario es almacenado en la base de datos.
-7. El usuario inicia sesión.
-8. El backend valida las credenciales.
-9. Se generan los tokens de autenticación (JWT).
-10. El frontend redirige al Dashboard.
-
----
-
-# Funcionalidades implementadas
-
-## Frontend
-
-- Login responsive.
-- Registro responsive.
-- Validación de formularios.
-- Integración con la API.
-- Manejo de errores.
-- Redirección al Dashboard.
-- Componentes reutilizables.
-
-## Backend
-
-- API REST de autenticación.
-- Registro de usuarios.
-- Inicio de sesión.
-- Hash de contraseñas con bcrypt.
-- Generación de JWT.
-- Integración con Prisma ORM.
-- Persistencia en MySQL.
-
----
-
-# Estructura agregada
-
-```text
-frontend/
-└── src/
-    ├── api/
-    │   ├── api.js
-    │   └── auth.js
-    │
-    ├── components/
-    │   ├── AuthLink/
-    │   ├── Button/
-    │   ├── Footer/
-    │   ├── Input/
-    │   ├── Logo/
-    │   ├── Sidebar/
-    │   ├── PasswordInput/
-    │   └── Tabs/
-    │
-    ├── pages/
-    │   ├── Dashboard/
-    │   ├── Inventory/
-    │   ├── Login/
-    │   ├── Prediction/
-    │   ├── Register/
-    │   ├── Sales/
-    │   └── Settings/
-    │
-    ├── routes/
-    │   ├── AppRouter.jsx
-    │   └── ProtectedRoute.jsx
-    └──layouts/
-        └── MainLayout.jsx
-
-backend/
-├── src/
-│   ├── config/
-│   │   └── prisma.js
-│   │
-│   ├── routes/
-│   │   ├── auth.routes.js
-│   │   └── index.js
-│   │
-│   ├── services/
-│   │   └── auth.service.js
-│   │
-│   └── app.js
-│
-└── index.js
----
-
-# Autenticación y Seguridad
-
-El sistema implementa autenticación basada en **JSON Web Token (JWT)** para proteger las rutas privadas de la API y garantizar que únicamente los usuarios autenticados puedan acceder a los recursos protegidos.
-
-## Inicio de sesión
-
-Al autenticarse correctamente mediante:
-
-```http
-POST /auth/login
-```
-
-el servidor genera y retorna:
-
-- Access Token
-- Refresh Token
-
-El **Access Token** debe enviarse en todas las solicitudes a rutas protegidas utilizando el encabezado:
-
-```http
-Authorization: Bearer <accessToken>
-```
-
----
-
-## Middleware de autenticación
-
-Se implementó un middleware encargado de validar el JWT antes de permitir el acceso a las rutas protegidas.
-
-El middleware realiza las siguientes validaciones:
-
-- Verifica que exista el encabezado `Authorization`.
-- Comprueba que el formato sea `Bearer <token>`.
-- Valida la firma del JWT.
-- Verifica que el token no haya expirado.
-- Extrae la información del usuario autenticado y la almacena en:
-
-```javascript
-req.user
-```
-
-Si el token no es válido o no existe, la API responde:
-
-```http
-401 Unauthorized
-```
-
----
-
-## Handler Global de Errores
-
-Se implementó un middleware global para centralizar el manejo de errores de toda la aplicación.
-
-Entre sus funciones se encuentran:
-
-- Capturar errores no controlados.
-- Retornar respuestas JSON consistentes.
-- Evitar exponer información sensible del servidor.
-- Registrar información útil para depuración.
-
-Las respuestas siguen la estructura:
-
-```json
-{
-    "message": "Descripción del error"
-}
-```
-
----
-
-## Registro de errores
-
-Cada error registrado incluye información como:
-
-- Timestamp
-- Método HTTP
-- Ruta solicitada
-- UserId (cuando el usuario está autenticado)
-- Mensaje del error
-
-Ejemplo:
-
-```text
-{
-    timestamp: "2026-07-24T22:10:15.234Z",
-    route: "/products",
-    method: "GET",
-    userId: "1168cb5c-060d-4268-a2a3-77980e371114",
-    message: "Token inválido."
-}
-```
-
----
-
-## Rutas protegidas
-
-Las rutas privadas utilizan el middleware de autenticación para validar el JWT antes de ejecutar la lógica del controlador.
-
-Ejemplo:
-
-```javascript
-router.get("/", authMiddleware, controller.getAll);
-```
-
-Si el usuario no envía un token válido, la solicitud es rechazada con código **401 Unauthorized**.
-
----
-
-## Archivos implementados
-
-La funcionalidad de autenticación y manejo de errores se encuentra distribuida en los siguientes archivos:
-
-```text
-src/
-├── middlewares/
-│   ├── auth.middleware.js
-│   └── error.middleware.js
-│
-├── utils/
-│   └── jwt.js
-│
-├── controllers/
-│   └── auth.controller.js
-│
-├── services/
-│   └── auth.service.js
-│
-└── app.js
-```
-
----
-
-## Funcionalidades implementadas
-
-- Autenticación mediante JWT.
-- Generación de Access Token y Refresh Token.
-- Middleware de validación de JWT.
-- Protección de rutas privadas.
-- Manejo global de errores.
-- Respuestas JSON estructuradas.
-- Registro de errores con información de auditoría.
-- Protección contra exposición de información interna del servidor.
-
----
-
-# Navegación de la aplicación
-
-Se implementó el layout base de la aplicación para las secciones privadas del sistema.
-
-## Características
-
-- Sidebar persistente para la navegación.
-- Navegación entre Dashboard, Inventario, Ventas, Predicción y Ajustes.
-- Resaltado visual de la ruta activa.
-- Protección de rutas mediante autenticación.
-- Cierre de sesión desde el menú lateral.
-- Sidebar responsive.
-- Menú hamburguesa para dispositivos móviles.
-- Cierre automático del menú al navegar o cerrar sesión.
+La carpeta `docs/` contiene diagramas del sistema, del modelo relacional y de algunos flujos de autenticación, registro de ventas y preparación de predicción.
