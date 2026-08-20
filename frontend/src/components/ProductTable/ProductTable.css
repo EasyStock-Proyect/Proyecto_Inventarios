@@ -261,29 +261,33 @@
     font-size: 13px;
 }
 
-
 .product-table-pagination {
     display: flex;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
     gap: 20px;
     padding: 20px 0;
+    margin-top: 16px;
     font-size: 12px;
 }
 
+
 .product-table-pagination button {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    border: 1px solid #d5d5d5;
-    background: white;
+    min-width: 110px;
+    height: 40px;
+    padding: 0 16px;
+    border: 1px solid var(--border);
     border-radius: 8px;
-    padding: 7px 13px;
+    background: var(--background);
+    color: var(--foreground);
+    font-size: 13px;
+    font-weight: 500;
     cursor: pointer;
+    transition: 0.2s ease;
 }
 
 .product-table-pagination button:hover:not(:disabled) {
-    background: #edf6e9;
+    background: var(--hover);
 }
 
 .product-table-pagination button:disabled {
@@ -291,6 +295,23 @@
     cursor: not-allowed;
 }
 
+.product-table-pagination button {
+    min-width: 110px;
+    height: 40px;
+    padding: 0 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--background);
+    color: var(--foreground);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
 
 .add-product-button {
     position: fixed;

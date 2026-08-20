@@ -5,7 +5,9 @@ import {
 } from "react";
 
 import {
-    FiDownload
+    FiDownload,
+    FiChevronLeft,
+    FiChevronRight
 } from "react-icons/fi";
 
 import "./Sales.css";
@@ -597,7 +599,8 @@ function Sales() {
                                 disabled={page <= 1 || loadingProducts}
                                 onClick={() => setPage((currentPage) => currentPage - 1)}
                             >
-                                ← Anterior
+                                <FiChevronLeft size={16} />
+                                Anterior
                             </button>
 
                             <span>
@@ -613,7 +616,8 @@ function Sales() {
                                 }
                                 onClick={() => setPage((currentPage) => currentPage + 1)}
                             >
-                                Siguiente →
+                                Siguiente
+                                <FiChevronRight size={16} />
                             </button>
 
                         </div>
@@ -757,12 +761,12 @@ function Sales() {
                             }
                             onClick={() =>
                                 setHistoryPage(
-                                    (currentPage) =>
-                                        currentPage - 1
+                                    (currentPage) => currentPage - 1
                                 )
                             }
                         >
-                            ← Anterior
+                            <FiChevronLeft size={16} />
+                            Anterior
                         </button>
 
                         <span>
@@ -781,12 +785,12 @@ function Sales() {
                             }
                             onClick={() =>
                                 setHistoryPage(
-                                    (currentPage) =>
-                                        currentPage + 1
+                                    (currentPage) => currentPage + 1
                                 )
                             }
                         >
-                            Siguiente →
+                            Siguiente
+                            <FiChevronRight size={16} />
                         </button>
 
                     </div>

@@ -578,6 +578,7 @@ function ProductTable() {
 
                     <ChevronLeft size={16} />
                     Anterior
+                    
                 </button>
 
 

@@ -171,6 +171,7 @@
     margin-top: 16px;
 }
 
+
 .sales-pagination button, .sales-history-pagination button {
     min-width: 110px;
     height: 40px;
@@ -183,6 +184,10 @@
     font-weight: 500;
     cursor: pointer;
     transition: 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
 }
 
 .sales-pagination button:hover:not(:disabled), .sales-history-pagination button:hover:not(:disabled){
