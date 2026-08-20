@@ -248,10 +248,12 @@ const getSalesReport = async ({
                     totalUnitsSold > 0
                         ? Number(
                             (
-                                product.unitsSold /
-                                totalUnitsSold
-                            ) * 100
-                        ).toFixed(2)
+                                (
+                                    product.unitsSold /
+                                    totalUnitsSold
+                                ) * 100
+                            ).toFixed(2)
+                        )
                         : 0
             }));
 
