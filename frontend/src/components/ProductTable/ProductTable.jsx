@@ -238,7 +238,7 @@ function ProductTable() {
     };
     const isProductLowStock = (product) => {
 
-        return product.stockCurrent < product.stockMinimum;
+        return product.stockCurrent <= product.stockMinimum;
 
     };
 
@@ -477,6 +477,10 @@ function ProductTable() {
                                                         />
 
                                                         {product.stockCurrent}
+
+                                                        <span>
+                                                            Reabastecer
+                                                        </span>
 
                                                     </span>
 
