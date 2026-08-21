@@ -57,6 +57,28 @@ function Dashboard() {
     }, []);
 
     const productMap = useMemo(() => new Map(products.map((product) => [product.id, product])), [products]);
+    const stockAlerts = useMemo(() => {
+        const alertsByProduct = new Map(
+            alerts.map((alert) => [alert.productId, alert])
+        );
+
+        products
+            .filter((product) => product.stockCurrent <= product.stockMinimum)
+            .forEach((product) => {
+                if (!alertsByProduct.has(product.id)) {
+                    alertsByProduct.set(product.id, {
+                        id: `stock-${product.id}`,
+                        productId: product.id,
+                        product
+                    });
+                }
+            });
+
+        return [...alertsByProduct.values()].filter((alert) => {
+            const product = alert.product || productMap.get(alert.productId);
+            return product && product.stockCurrent <= product.stockMinimum;
+        });
+    }, [alerts, products, productMap]);
     const todayKey = formatDate(new Date());
     const monthKey = todayKey.slice(0, 7);
     const todaySales = sales.filter((sale) => getDateKey(sale.createdAt) === todayKey);
@@ -86,7 +108,9 @@ function Dashboard() {
     }, [sales]);
 
     const maxChartValue = Math.max(...chartData.map((day) => day.quantity), 1);
-    const criticalProducts = products.filter((product) => product.stockCurrent <= product.stockMinimum).length;
+    const criticalProducts = products.filter(
+        (product) => product.stockCurrent < product.stockMinimum / 2
+    ).length;
     const todayRevenue = todaySales.reduce((total, sale) => total + Number(sale.total || 0), 0);
 
     return (
@@ -95,14 +119,14 @@ function Dashboard() {
             <section className="dashboard-metrics" aria-label="Métricas del negocio">
                 <MetricCard icon={<ShoppingBag />} tone="green" label="Ventas hoy" value={loading ? "..." : todaySales.length} helper="Transacciones registradas" />
                 <MetricCard icon={<CircleDollarSign />} tone="green" label="Ingresos hoy" value={loading ? "..." : money(todayRevenue)} helper="Total vendido hoy" />
-                <MetricCard icon={<AlertTriangle />} tone="orange" label="Alertas activas" value={loading ? "..." : alerts.length} helper="Stock bajo" />
+                <MetricCard icon={<AlertTriangle />} tone="orange" label="Alertas activas" value={loading ? "..." : stockAlerts.length} helper="Stock bajo" />
                 <MetricCard icon={<CircleX />} tone="red" label="Productos críticos" value={loading ? "..." : criticalProducts} helper="Reabastecer" />
             </section>
             <section className="dashboard-grid">
                 <div className="dashboard-panel sales-chart-panel"><div className="panel-heading"><div><h2>Ventas últimos 7 días</h2><p>Unidades vendidas</p></div><span className="panel-badge">{chartData.reduce((sum, day) => sum + day.quantity, 0)} uds</span></div><div className="sales-chart" aria-label="Gráfica de ventas de los últimos 7 días">{chartData.map((day) => <div className="chart-column" key={day.key}><span className="chart-value">{day.quantity || ""}</span><div className="chart-bar-wrap"><div className="chart-bar" style={{ height: `${Math.max((day.quantity / maxChartValue) * 100, day.quantity ? 10 : 2)}%` }} /></div><span className="chart-label">{day.label}</span></div>)}</div></div>
                 <div className="dashboard-panel top-products-panel"><div className="panel-heading"><div><h2>Más vendidos</h2><p>Este mes</p></div><button type="button" className="text-button" onClick={() => setShowAllProducts(true)}>Ver todo <ArrowRight size={14} /></button></div><ProductRanking products={topProducts.slice(0, 5)} /></div>
             </section>
-            <section className="dashboard-panel alerts-panel"><div className="panel-heading"><div><h2>Alertas de stock <span className="count-badge">{alerts.length}</span></h2><p>Productos que necesitan atención</p></div><button type="button" className="text-button" onClick={() => navigate("/inventario")}>Gestionar <ArrowRight size={14} /></button></div>{alerts.length === 0 && !loading ? <p className="empty-state">No hay alertas activas.</p> : alerts.slice(0, 3).map((alert) => <div className="alert-row" key={alert.id}><span className="alert-icon"><AlertTriangle size={16} /></span><div className="alert-details"><strong>{alert.product?.name || "Producto"}</strong><div className="stock-progress"><span style={{ width: `${Math.min(((alert.product?.stockCurrent || 0) / Math.max(alert.product?.stockMinimum || 1, 1)) * 100, 100)}%` }} /></div></div><span className="stock-value">{alert.product?.stockCurrent || 0}/{alert.product?.stockMinimum || 0}</span></div>)}</section>
+            <section className="dashboard-panel alerts-panel"><div className="panel-heading"><div><h2>Alertas de stock <span className="count-badge">{stockAlerts.length}</span></h2><p>Productos que necesitan atención</p></div><button type="button" className="text-button" onClick={() => navigate("/inventario")}>Gestionar <ArrowRight size={14} /></button></div>{stockAlerts.length === 0 && !loading ? <p className="empty-state">No hay alertas activas.</p> : stockAlerts.map((alert) => <div className="alert-row" key={alert.id}><span className="alert-icon"><AlertTriangle size={16} /></span><div className="alert-details"><strong>{alert.product?.name || productMap.get(alert.productId)?.name || "Producto"}</strong><div className="stock-progress"><span style={{ width: `${Math.min(((alert.product?.stockCurrent || productMap.get(alert.productId)?.stockCurrent || 0) / Math.max(alert.product?.stockMinimum || productMap.get(alert.productId)?.stockMinimum || 1, 1)) * 100, 100)}%` }} /></div></div><span className="stock-value">{alert.product?.stockCurrent || productMap.get(alert.productId)?.stockCurrent || 0}/{alert.product?.stockMinimum || productMap.get(alert.productId)?.stockMinimum || 0}</span></div>)}</section>
             {showAllProducts && <div className="dashboard-modal-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && setShowAllProducts(false)}><div className="dashboard-modal" role="dialog" aria-modal="true" aria-labelledby="all-products-title"><div className="modal-heading"><div><h2 id="all-products-title">Productos vendidos este mes</h2><p>{topProducts.length} productos con ventas registradas</p></div><button type="button" className="icon-button" onClick={() => setShowAllProducts(false)} aria-label="Cerrar lista"><CircleX size={22} /></button></div><ProductRanking products={topProducts} showRevenue /></div></div>}
         </div>
     );
