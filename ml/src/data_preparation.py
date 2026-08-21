@@ -7,18 +7,19 @@ def build_sales_time_series(
     end_date: str | None = None
 ) -> pd.DataFrame:
     """
-    Construye una serie temporal diaria de ventas por producto.
+    Construye una serie temporal diaria de ventas por usuario y producto.
 
     Si se proporciona un rango de fechas, todas las series se
     completan dentro de ese intervalo.
 
-    Si no se proporciona un rango, cada producto utiliza desde
+    Si no se proporciona un rango, cada serie utiliza desde
     su primera venta hasta su última venta.
 
     Los días sin ventas se rellenan con 0.
     """
 
     columns = [
+        "userId",
         "productId",
         "date",
         "quantity_sold"
@@ -42,14 +43,17 @@ def build_sales_time_series(
         .astype(int)
     )
 
-    range_start = None
-    range_end = None
+    range_start = (
+        pd.to_datetime(start_date).normalize()
+        if start_date
+        else None
+    )
 
-    if start_date:
-        range_start = pd.to_datetime(start_date).normalize()
-
-    if end_date:
-        range_end = pd.to_datetime(end_date).normalize()
+    range_end = (
+        pd.to_datetime(end_date).normalize()
+        if end_date
+        else None
+    )
 
     if range_start is not None and range_end is not None:
         if range_start > range_end:
@@ -74,7 +78,7 @@ def build_sales_time_series(
 
     df = (
         df.groupby(
-            ["productId", "date"],
+            ["userId", "productId", "date"],
             as_index=False
         )["quantity_sold"]
         .sum()
@@ -82,25 +86,27 @@ def build_sales_time_series(
 
     complete_series = []
 
-    for product_id, product_df in df.groupby("productId"):
+    for (user_id, product_id), product_df in df.groupby(
+        ["userId", "productId"]
+    ):
 
         if range_start is not None:
-            product_start = range_start
+            series_start = range_start
         else:
-            product_start = product_df["date"].min()
+            series_start = product_df["date"].min()
 
         if range_end is not None:
-            product_end = range_end
+            series_end = range_end
         else:
-            product_end = product_df["date"].max()
+            series_end = product_df["date"].max()
 
         all_dates = pd.date_range(
-            start=product_start,
-            end=product_end,
+            start=series_start,
+            end=series_end,
             freq="D"
         )
 
-        product_series = (
+        series = (
             product_df
             .set_index("date")
             .reindex(all_dates, fill_value=0)
@@ -108,10 +114,11 @@ def build_sales_time_series(
             .reset_index()
         )
 
-        product_series["productId"] = product_id
+        series["userId"] = user_id
+        series["productId"] = product_id
 
         complete_series.append(
-            product_series[
+            series[
                 columns
             ]
         )
@@ -126,7 +133,7 @@ def build_sales_time_series(
     return (
         result
         .sort_values(
-            ["productId", "date"]
+            ["userId", "productId", "date"]
         )
         .reset_index(drop=True)
     )

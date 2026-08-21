@@ -24,3 +24,5 @@ data/processed/*
 # IDE
 .vscode/
 .idea/
+
+local.settings.json
