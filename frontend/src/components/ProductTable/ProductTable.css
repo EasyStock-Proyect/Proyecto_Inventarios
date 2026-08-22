@@ -239,6 +239,10 @@
     color: #1f6b28;
 }
 
+.delete-action-button:hover {
+    color: #c62828;
+}
+
 
 .empty-products {
     text-align: center;

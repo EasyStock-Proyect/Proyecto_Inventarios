@@ -7,6 +7,7 @@ import {
     Search,
     Mic,
     TriangleAlert,
+    Trash2,
     Pencil,
     CirclePlus,
     Check,
@@ -17,11 +18,13 @@ import {
 } from "lucide-react";
 
 import { getProducts } from "../../services/product.service";
+import { deleteProduct } from "../../services/product.service";
 import { getCategories } from "../../services/category.service";
 
 import "./ProductTable.css";
 
 import ProductFormModal from "../ProductFormModal/ProductFormModal";
+import ConfirmDialog from "../ConfirmDialog/ConfirmDialog";
 
 
 function ProductTable() {
@@ -68,6 +71,8 @@ function ProductTable() {
     const [error, setError] = useState("");
 
     const [selectedProduct, setSelectedProduct] = useState(null);
+    const [productToDelete, setProductToDelete] = useState(null);
+    const [deletingProduct, setDeletingProduct] = useState(false);
     const [openAdjustmentModal, setOpenAdjustmentModal] = useState(false);
     const [productModalVersion, setProductModalVersion] = useState(0);
     const [adjustmentModalVersion, setAdjustmentModalVersion] = useState(0);
@@ -219,6 +224,37 @@ function ProductTable() {
         setProductModalOpen(false);
 
         setSelectedProduct(null);
+
+    };
+
+    const handleConfirmDelete = async () => {
+
+        if (!productToDelete) {
+            return;
+        }
+
+        try {
+
+            setDeletingProduct(true);
+            setError("");
+
+            await deleteProduct(productToDelete.id);
+
+            setProductToDelete(null);
+            await loadProducts();
+
+        } catch (error) {
+
+            setError(
+                error.response?.data?.message ||
+                "No fue posible eliminar el producto."
+            );
+
+        } finally {
+
+            setDeletingProduct(false);
+
+        }
 
     };
 
@@ -515,6 +551,17 @@ function ProductTable() {
 
                                                 <div className="product-actions">
 
+                                                    <button
+                                                        type="button"
+                                                        title="Eliminar producto"
+                                                        aria-label={`Eliminar ${product.name}`}
+                                                        className="action-button delete-action-button"
+                                                        onClick={() => setProductToDelete(product)}
+                                                    >
+
+                                                        <Trash2 size={17} />
+
+                                                    </button>
 
                                                     <button
                                                         type="button"
@@ -650,6 +697,22 @@ function ProductTable() {
                     await loadCategories();
 
                 }}
+            />
+
+            <ConfirmDialog
+                open={Boolean(productToDelete)}
+                type="confirm"
+                title="Eliminar producto"
+                message={
+                    productToDelete
+                        ? `¿Estás seguro de eliminar el producto "${productToDelete.name}"?`
+                        : ""
+                }
+                confirmText="Eliminar"
+                cancelText="Cancelar"
+                onCancel={() => setProductToDelete(null)}
+                onConfirm={handleConfirmDelete}
+                loading={deletingProduct}
             />
 
             <CategoryManagementModal

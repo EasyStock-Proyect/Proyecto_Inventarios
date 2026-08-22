@@ -33,6 +33,16 @@ export const updateProduct = async (id, data) => {
 
 };
 
+export const deleteProduct = async (id) => {
+
+    const response = await api.delete(
+        `/products/${id}`
+    );
+
+    return response.data;
+
+};
+
 export const adjustStock = async (productId, data) => {
 
     const response = await api.post(

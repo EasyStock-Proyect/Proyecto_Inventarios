@@ -9,12 +9,16 @@ function Tabs() {
 
     return (
         <div className="tabs">
-            <button className={`tab ${isLogin ? "active":""}`}
+            <button
+                type="button"
+                className={`tab ${isLogin ? "active":""}`}
                 onClick={()=>navigate("/login")}
             >
                 Ingresar
             </button>
-            <button className={`tab ${!isLogin ? "active":""}`}
+            <button
+                type="button"
+                className={`tab ${!isLogin ? "active":""}`}
                 onClick={()=>navigate("/register")}
             >
                 Crear cuenta

@@ -121,7 +121,10 @@ function Register() {
 
                 <Logo />
 
-                <div className="register-card">
+                <form className="register-card" onSubmit={(event) => {
+                    event.preventDefault();
+                    void handleRegister();
+                }}>
 
                     <Tabs active="register" />
 
@@ -131,6 +134,7 @@ function Register() {
                         value={text}
                         onChange={(e) => setText(e.target.value)}
                     />
+
 
                     {errors.text && (
                         <p className="error-message">
@@ -195,7 +199,7 @@ function Register() {
                     </div>
 
                     <div className="button-container">
-                        <Button onClick={handleRegister}>
+                        <Button type="submit">
                             Crear cuenta
                         </Button>
                     </div>
@@ -229,7 +233,7 @@ function Register() {
                         }}
                     />
 
-                </div>
+                </form>
 
                 <Footer />
 
