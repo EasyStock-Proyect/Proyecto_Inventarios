@@ -313,6 +313,55 @@ describe("Products and Stock - Integration Tests", () => {
 
     });
 
+    test("GET /api/products debe responder en menos de 500 ms con 100 productos", async () => {
+
+        const existingProducts = await prisma.product.count({
+            where: {
+                userId,
+                categoryId,
+                deletedAt: null
+            }
+        });
+
+        const productsToCreate = Math.max(100 - existingProducts, 0);
+
+        await prisma.product.createMany({
+            data: Array.from({ length: productsToCreate }, (_, index) => ({
+                userId,
+                categoryId,
+                name: `Producto rendimiento ${index + 1}`,
+                sku: `PERF-${Date.now()}-${index}`,
+                price: 10000,
+                stockCurrent: 10,
+                stockMinimum: 2
+            }))
+        });
+
+        await request(app)
+            .get("/api/products")
+            .query({ page: 1, limit: 100 })
+            .set("Authorization", `Bearer ${accessToken}`);
+
+        const durations = [];
+
+        for (let attempt = 0; attempt < 5; attempt += 1) {
+            const startedAt = performance.now();
+
+            const response = await request(app)
+                .get("/api/products")
+                .query({ page: 1, limit: 100 })
+                .set("Authorization", `Bearer ${accessToken}`);
+
+            durations.push(performance.now() - startedAt);
+
+            expect(response.status).toBe(200);
+            expect(response.body.data).toHaveLength(100);
+        }
+
+        expect(Math.max(...durations)).toBeLessThan(500);
+
+    });
+
     test("PUT /api/products/:id debe retornar error si el producto no existe", async () => {
 
         const fakeProductId =

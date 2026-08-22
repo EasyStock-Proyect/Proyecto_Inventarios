@@ -3,7 +3,7 @@
     margin: -30px;
     min-height: calc(100% + 60px);
     box-sizing: border-box;
-    background: --background;
+    background: var(--background);
 }
 
 /* Contenido nueva venta */

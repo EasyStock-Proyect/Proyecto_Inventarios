@@ -92,8 +92,14 @@ function Login() {
                     <Logo />
                 </div>
 
-                <div className="login-card">
+                <form className="login-card" onSubmit={(event) => {
+                    event.preventDefault();
+                    void handleLogin();
+                }}>
+
+
                     <Tabs active="login" />
+
 
                     <Input
                         type="email"
@@ -120,7 +126,7 @@ function Login() {
                         Minimo 8 caracteres
                     </div>
                     <div className="button-container">
-                        <Button onClick={handleLogin}>
+                        <Button type="submit">
                             Iniciar sesión
                         </Button>
                     </div>
@@ -134,7 +140,7 @@ function Login() {
                         text="¿No tienes cuenta?"
                         linkText="Crear cuenta"
                     />
-                </div>
+                </form>
                 <Footer />
             </div>
         </div>
