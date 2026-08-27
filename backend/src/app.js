@@ -3,6 +3,8 @@ const routes = require("./routes");
 const cors = require("cors");
 const errorMilddleware = require("./middlewares/error.middleware");
 const cookieParser = require("cookie-parser");
+const path = require("path");
+const swaggerUi = require("swagger-ui-express");
 
 const app = express();
 
@@ -19,6 +21,33 @@ app.use(cookieParser());
 app.use(express.json());
 
 app.use("/api", routes);
+
+const openApiPath = path.join(
+    __dirname,
+    "..",
+    "..",
+    "docs",
+    "api",
+    "openapi.yaml"
+);
+
+app.get("/api-docs/openapi.yaml", (req, res, next) => {
+    res.sendFile(openApiPath, (error) => {
+        if (error) {
+            next(error);
+        }
+    });
+});
+
+app.use(
+    "/api-docs",
+    swaggerUi.serve,
+    swaggerUi.setup(null, {
+        swaggerOptions: {
+            url: "/api-docs/openapi.yaml"
+        }
+    })
+);
 
 app.use(errorMilddleware)
 
