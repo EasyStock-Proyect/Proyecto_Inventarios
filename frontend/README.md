@@ -1,16 +1,41 @@
-# React + Vite
+# Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplicación React 19 construida con Vite. Usa React Router, Axios, CSS propio, Lucide React, React Icons, Vitest y Testing Library.
 
-Currently, two official plugins are available:
+## Estructura
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- `src/api/`: cliente Axios y llamadas de autenticación.
+- `src/auth/`: contexto, access token en memoria, restauración y refresh de sesión.
+- `src/services/`: llamadas de productos, categorías, ventas y alertas.
+- `src/components/`: componentes reutilizables.
+- `src/pages/`: login, registro, dashboard, inventario, ventas, predicción y ajustes.
+- `src/routes/`: rutas públicas y protegidas.
 
-## React Compiler
+## Instalación y ejecución
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```powershell
+npm install
+npm run dev
+```
 
-## Expanding the ESLint configuration
+La variable `VITE_API_URL` configura la URL base. Si no se define, el cliente usa `/api`; el cliente normaliza el sufijo `/api` cuando es necesario.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Scripts
+
+```text
+npm run dev      Servidor Vite
+npm run build    Compilación de producción en dist/
+npm run lint     ESLint
+npm test         Vitest
+npm run preview  Vista previa de la compilación
+```
+
+## Autenticación
+
+Axios envía el access token en `Authorization: Bearer` y `withCredentials=true` para la cookie HTTP-only de refresh. Ante un `401`, intenta renovar la sesión una vez. El token de acceso se conserva en memoria, no en almacenamiento persistente del navegador.
+
+## Estado funcional
+
+El frontend consume autenticación, inventario, categorías, ventas y alertas. Dashboard, ajustes y predicción tienen pantallas en desarrollo; la página de predicción aún no consume `GET /api/predictions`.
+
+La documentación general está en [../README.md](../README.md).

@@ -1,135 +1,49 @@
-# ML Data Preparation
+# ML y Azure Functions
 
 ## Propósito
 
-El módulo `ml/` prepara el historial de ventas almacenado en PostgreSQL para futuras tareas de análisis y predicción de demanda. Su responsabilidad actual se limita a la extracción y transformación de datos; no incluye modelos predictivos ni entrenamiento.
+El módulo `ml/` consulta ventas en PostgreSQL, construye series diarias, entrena un modelo Prophet por usuario/producto y persiste predicciones en `demand_prediction`. Azure Functions ejecuta este proceso mediante `weekly_predictions`.
 
-## Estado actual
+## Pipeline de predicciones
 
-Actualmente, el módulo implementa un pipeline de preparación de datos de ventas que:
+1. `fetch_sales_data` agrupa `sale_item` por usuario, producto y día, excluyendo productos eliminados.
+2. `build_sales_time_series` completa con cero los días sin ventas.
+3. Cada serie usa como máximo los últimos 60 días disponibles.
+4. Prophet genera un horizonte de siete días.
+5. El resultado se guarda mediante upsert, una fila por usuario, producto y fecha.
 
-- Consulta las ventas agrupadas por producto y día.
-- Normaliza y completa las series diarias, asignando `0` a los días sin ventas.
-- Genera un archivo CSV con los datos procesados.
+La predicción se genera desde el primer día con historial disponible. Con menos de 30 días, `hasEnoughData` es falso y la recomendación no se considera confiable; el modelo se ejecuta igualmente.
 
-Los modelos de series temporales, el entrenamiento, la predicción y cualquier integración con otros módulos del sistema son funcionalidades futuras y no forman parte de la implementación actual.
+## Componentes
 
-## Arquitectura del módulo
+- `src/config.py`: carga `DATABASE_URL`.
+- `src/database.py`: conexión y consulta de ventas.
+- `src/data_preparation.py`: normalización y completado de series.
+- `src/prediction.py`: ventana de entrenamiento y Prophet.
+- `src/prediction_service.py`: generación y persistencia de resultados.
+- `function_app.py`: endpoint `health` y temporizador `weekly_predictions`.
+- `scripts/prepare_sales_data.py`: generación manual de `data/processed/sales_time_series.csv`.
 
-```text
-ml/
-├── src/
-│   ├── __init__.py
-│   ├── config.py
-│   ├── database.py
-│   └── data_preparation.py
-│
-├── scripts/
-│   └── prepare_sales_data.py
-│
-├── data/
-│   └── processed/
-│       └── .gitkeep
-│
-├── requirements.txt
-├── .env.example
-├── .gitignore
-└── README.md
-```
+## Instalación y ejecución
 
-### Archivos principales
-
-- `src/config.py`: carga las variables de entorno con `python-dotenv`, obtiene `DATABASE_URL` y detiene la ejecución si no está configurada.
-- `src/database.py`: crea conexiones PostgreSQL mediante Psycopg 3 y consulta `sale` y `sale_item` para obtener `productId`, la fecha de venta y `quantity_sold`, agrupados por producto y día.
-- `src/data_preparation.py`: convierte los datos en un `DataFrame`, normaliza las fechas, convierte las cantidades a valores numéricos, agrupa por producto y fecha, completa los días sin ventas y ordena el resultado.
-- `scripts/prepare_sales_data.py`: punto de entrada del pipeline. Lee los argumentos de fecha, consulta la base de datos, ejecuta la preparación y genera el CSV de salida.
-- `data/processed/`: directorio destinado a los archivos generados por el pipeline. Los datasets procesados no se versionan; `.gitkeep` conserva la carpeta en el repositorio.
-
-## Requisitos
-
-- Python 3.14 o una versión compatible con las dependencias especificadas.
-- PostgreSQL accesible desde el entorno donde se ejecuta el script.
-- Un entorno virtual de Python, recomendado para aislar las dependencias del módulo.
-
-## Instalación
-
-Desde una terminal de PowerShell, ubícate en el directorio `ml/` y crea el entorno virtual:
+Desde `ml/`:
 
 ```powershell
-cd C:\Proyecto_Inventarios\ml
-py -3.14 -m venv .venv
-```
-
-Activa el entorno virtual en Windows:
-
-```powershell
+python -m venv .venv
 .\.venv\Scripts\Activate.ps1
-```
-
-Instala las dependencias actuales:
-
-```powershell
-python -m pip install --upgrade pip
-pip install -r requirements.txt
-```
-
-Las dependencias instaladas son `psycopg[binary]`, `pandas` y `python-dotenv`, con las versiones fijadas en `requirements.txt`.
-
-## Configuración
-
-1. Crea `ml/.env` a partir del archivo de ejemplo:
-
-   ```powershell
-   Copy-Item .env.example .env
-   ```
-
-2. Edita `ml/.env` y configura la conexión a PostgreSQL:
-
-   ```env
-   DATABASE_URL=postgresql://usuario:contraseña@host:puerto/base_de_datos
-   ```
-
-`DATABASE_URL` es obligatoria. El archivo `.env` contiene configuración local y no debe subirse al repositorio.
-
-## Ejecución
-
-El pipeline se ejecuta desde el directorio `ml/`:
-
-```powershell
+python -m pip install -r requirements.txt
+Copy-Item .env.example .env
 python scripts/prepare_sales_data.py
 ```
 
-También admite límites opcionales de fecha en formato `YYYY-MM-DD`:
+Configura `DATABASE_URL` y, para Azure Functions, `ML_TRAINING_SCHEDULE`. Los valores reales no deben subirse al repositorio.
 
-```powershell
-python scripts/prepare_sales_data.py --start 2026-08-01 --end 2026-08-20
-```
+## Azure Functions
 
-Se puede indicar únicamente uno de los límites:
+`GET /api/health` comprueba la conexión PostgreSQL. `weekly_predictions` abre la conexión, procesa productos con historial, registra resultados y la cierra. El repositorio no contiene workflow de despliegue de Functions.
 
-```powershell
-python scripts/prepare_sales_data.py --start 2026-08-01
-python scripts/prepare_sales_data.py --end 2026-08-20
-```
+## Relación con el backend
 
-Cuando no se proporciona un rango, cada producto utiliza desde su primera venta hasta su última venta disponible. Cuando se proporciona un límite, las series se generan dentro del intervalo resultante. Si la fecha inicial es posterior a la fecha final, la preparación genera un error de validación.
+El frontend no invoca ML directamente. Express consulta `demand_prediction` mediante el endpoint autenticado `GET /api/predictions`. Ese endpoint agrega siete días por producto y devuelve `forecast7d`, `currentStock`, `recommendedOrder`, `confidence` y `hasEnoughData`; mantiene una caché de una hora por usuario.
 
-## Resultado
-
-El pipeline genera o sobrescribe el siguiente archivo:
-
-```text
-data/processed/sales_time_series.csv
-```
-
-El CSV contiene exactamente estas columnas:
-
-```text
-productId,date,quantity_sold
-```
-
-Cada fila representa la cantidad total vendida de un producto en un día. Los días sin ventas dentro del intervalo de cada serie se incluyen con `quantity_sold` igual a `0`. Si la consulta no encuentra ventas, se genera igualmente el CSV con esas tres columnas y sin registros.
-
-## Control de versiones de datos
-
-Los archivos generados dentro de `data/processed/` están excluidos del control de versiones. Solo se conserva `.gitkeep` para mantener disponible la estructura de directorios requerida por el pipeline.
+Para la operación, consulta [docs/ml-predictions.md](../docs/ml-predictions.md) y [docs/operations.md](../docs/operations.md).
