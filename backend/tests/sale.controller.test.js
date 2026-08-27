@@ -1,5 +1,6 @@
 jest.mock("../src/services/sale.service", () => ({
-    createSale: jest.fn()
+    createSale: jest.fn(),
+    getSales: jest.fn()
 }));
 
 const saleService =
@@ -60,6 +61,41 @@ test("createSale error", async () => {
     );
 
     await controller.createSale(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+});
+
+test("getSales exitoso", async () => {
+    const res = response();
+    const sales = {
+        data: [],
+        pagination: { page: 1, limit: 20, total: 0, totalPages: 0 }
+    };
+    saleService.getSales.mockResolvedValue(sales);
+
+    await controller.getSales(
+        {
+            user: { id: "user1" },
+            query: { page: "2", startDate: "2026-08-01" }
+        },
+        res
+    );
+
+    expect(saleService.getSales).toHaveBeenCalledWith(
+        "user1",
+        { page: "2", startDate: "2026-08-01" }
+    );
+    expect(res.json).toHaveBeenCalledWith(sales);
+});
+
+test("getSales error", async () => {
+    const res = response();
+    saleService.getSales.mockRejectedValue(new Error("Error"));
+
+    await controller.getSales(
+        { user: { id: "user1" }, query: {} },
+        res
+    );
 
     expect(res.status).toHaveBeenCalledWith(400);
 });

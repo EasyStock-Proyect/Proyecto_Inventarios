@@ -11,8 +11,13 @@ jest.mock("../src/config/prisma", () => ({
     },
 
     refreshToken: {
-        create: jest.fn()
-    }
+        create: jest.fn(),
+        findFirst: jest.fn(),
+        updateMany: jest.fn(),
+        update: jest.fn()
+    },
+
+    $transaction: jest.fn()
 }));
 
 const prisma = require("../src/config/prisma");
@@ -104,6 +109,145 @@ describe("register", () => {
 
     });
 
+});
+
+describe("getCurrentUser", () => {
+
+    test("devuelve los campos públicos del usuario", async () => {
+        const user = {
+            id: "1",
+            email: "test@test.com",
+            businessName: "Store",
+            businessType: "Retail"
+        };
+        prisma.user.findUnique.mockResolvedValue(user);
+
+        await expect(
+            authService.getCurrentUser("1")
+        ).resolves.toEqual(user);
+
+        expect(prisma.user.findUnique).toHaveBeenCalledWith({
+            where: { id: "1" },
+            select: {
+                id: true,
+                email: true,
+                businessName: true,
+                businessType: true
+            }
+        });
+    });
+
+    test("lanza error si el usuario no existe", async () => {
+        prisma.user.findUnique.mockResolvedValue(null);
+
+        await expect(
+            authService.getCurrentUser("missing")
+        ).rejects.toThrow("Usuario no encontrado.");
+    });
+});
+
+describe("refreshSession", () => {
+
+    test("rechaza refresh token ausente", async () => {
+        await expect(
+            authService.refreshSession()
+        ).rejects.toThrow("Refresh token no proporcionado");
+    });
+
+    test("rechaza refresh token con firma invalida", async () => {
+        jwt.verify.mockImplementation(() => {
+            throw new Error("Invalid token");
+        });
+
+        await expect(
+            authService.refreshSession("invalid-token")
+        ).rejects.toThrow("Refresh token inválido o expirado");
+    });
+
+    test("rechaza refresh token no almacenado o revocado", async () => {
+        jwt.verify.mockReturnValue({ id: "1" });
+        prisma.refreshToken.findFirst.mockResolvedValue(null);
+
+        await expect(
+            authService.refreshSession("refresh-token")
+        ).rejects.toThrow("Refresh token inválido o revocado");
+    });
+
+    test("rechaza refresh token expirado en la base de datos", async () => {
+        jwt.verify.mockReturnValue({ id: "1" });
+        prisma.refreshToken.findFirst.mockResolvedValue({
+            id: "stored-token",
+            expiresAt: new Date(Date.now() - 1000)
+        });
+
+        await expect(
+            authService.refreshSession("refresh-token")
+        ).rejects.toThrow("Refresh token expirado");
+    });
+
+    test("rota refresh token y devuelve nuevo access token", async () => {
+        jwt.verify.mockReturnValue({ id: "1" });
+        prisma.refreshToken.findFirst.mockResolvedValue({
+            id: "stored-token",
+            expiresAt: new Date(Date.now() + 10000)
+        });
+        prisma.user.findUnique.mockResolvedValue({
+            id: "1",
+            email: "test@test.com",
+            passwordHash: "hash"
+        });
+        jwt.sign
+            .mockReturnValueOnce("new-access-token")
+            .mockReturnValueOnce("new-refresh-token");
+        jwt.decode.mockReturnValue({
+            exp: Math.floor(Date.now() / 1000) + 1000
+        });
+        prisma.$transaction.mockResolvedValue([]);
+
+        await expect(
+            authService.refreshSession("refresh-token")
+        ).resolves.toEqual({
+            accessToken: "new-access-token",
+            refreshToken: "new-refresh-token"
+        });
+        expect(prisma.$transaction).toHaveBeenCalled();
+    });
+
+    test("rechaza si el usuario del refresh no existe", async () => {
+        jwt.verify.mockReturnValue({ id: "missing" });
+        prisma.refreshToken.findFirst.mockResolvedValue({
+            id: "stored-token",
+            expiresAt: new Date(Date.now() + 10000)
+        });
+        prisma.user.findUnique.mockResolvedValue(null);
+
+        await expect(
+            authService.refreshSession("refresh-token")
+        ).rejects.toThrow("Usuario no encontrado");
+    });
+});
+
+describe("logout", () => {
+
+    test("no hace nada si no recibe refresh token", async () => {
+        await authService.logout();
+
+        expect(prisma.refreshToken.updateMany).not.toHaveBeenCalled();
+    });
+
+    test("revoca refresh token activo por su hash", async () => {
+        await authService.logout("refresh-token");
+
+        expect(prisma.refreshToken.updateMany).toHaveBeenCalledWith({
+            where: {
+                tokenHash: expect.any(String),
+                revokedAt: null
+            },
+            data: {
+                revokedAt: expect.any(Date)
+            }
+        });
+    });
 });
 
 
