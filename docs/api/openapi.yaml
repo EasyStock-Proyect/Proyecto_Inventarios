@@ -916,9 +916,6 @@ components:
         email:
           type: string
           format: email
-        passwordHash:
-          type: string
-          description: Hash devuelto actualmente por el registro; nunca contiene la contraseña en claro.
         businessName:
           type: string
         businessType:
