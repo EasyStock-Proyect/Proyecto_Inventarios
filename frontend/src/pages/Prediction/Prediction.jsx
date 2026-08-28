@@ -1,23 +1,62 @@
-import { useEffect, useMemo, useState } from "react";
+import {
+    useEffect,
+    useMemo,
+    useState
+} from "react";
+
 import {
     AlertTriangle,
     CheckCircle2,
+    ChevronLeft,
+    ChevronRight,
     Info,
     PackageOpen,
     RefreshCw
 } from "lucide-react";
 
-import { getPredictions } from "../../services/prediction.service";
+import PredictionDetailModal
+    from "../../components/PredictionDetailModal/PredictionDetailModal";
+
+import {
+    getPredictions
+} from "../../services/prediction.service";
 
 import "./Prediction.css";
 
+const ITEMS_PER_PAGE = 10;
+
 function Prediction() {
 
-    const [predictions, setPredictions] = useState([]);
-    const [selectedProduct, setSelectedProduct] = useState(null);
+    const [
+        predictions,
+        setPredictions
+    ] = useState([]);
 
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
+    const [
+        selectedProduct,
+        setSelectedProduct
+    ] = useState(null);
+
+    const [
+        loading,
+        setLoading
+    ] = useState(true);
+
+    const [
+        error,
+        setError
+    ] = useState("");
+
+    const [
+        page,
+        setPage
+    ] = useState(1);
+
+    const [
+        showInfo,
+        setShowInfo
+    ] = useState(false);
+
 
     const loadPredictions = async () => {
 
@@ -26,13 +65,16 @@ function Prediction() {
             setLoading(true);
             setError("");
 
-            const response = await getPredictions();
+            const response =
+                await getPredictions();
 
             setPredictions(
                 Array.isArray(response)
                     ? response
                     : []
             );
+
+            setPage(1);
 
         } catch (error) {
 
@@ -54,37 +96,45 @@ function Prediction() {
 
     };
 
+
     useEffect(() => {
 
-        loadPredictions();
+        const loadPredictionsOnMount =
+            setTimeout(loadPredictions, 0);
 
+        return () => {
+            clearTimeout(loadPredictionsOnMount);
+        };
     }, []);
+
 
     const processedPredictions = useMemo(() => {
 
         return predictions
             .map((prediction) => {
 
-                const stock =
-                    Number(prediction.currentStock ?? 0);
+                const currentStock =
+                    Number(
+                        prediction.currentStock ?? 0
+                    );
 
-                const demand =
-                    Number(prediction.forecast7d ?? 0);
+                const forecast7d =
+                    Number(
+                        prediction.forecast7d ?? 0
+                    );
 
                 const recommendedOrder =
                     Number(
                         prediction.recommendedOrder ?? 0
                     );
 
-                const needsReplenishment =
-                    stock < demand;
-
                 return {
                     ...prediction,
-                    currentStock: stock,
-                    forecast7d: demand,
+                    currentStock,
+                    forecast7d,
                     recommendedOrder,
-                    needsReplenishment
+                    needsReplenishment:
+                        currentStock < forecast7d
                 };
 
             })
@@ -98,6 +148,22 @@ function Prediction() {
                     return a.needsReplenishment
                         ? -1
                         : 1;
+                }
+
+                if (
+                    a.needsReplenishment &&
+                    b.needsReplenishment
+                ) {
+
+                    const deficitA =
+                        a.forecast7d -
+                        a.currentStock;
+
+                    const deficitB =
+                        b.forecast7d -
+                        b.currentStock;
+
+                    return deficitB - deficitA;
 
                 }
 
@@ -113,6 +179,7 @@ function Prediction() {
 
     }, [predictions]);
 
+
     const summary = useMemo(() => {
 
         const replenishment =
@@ -122,10 +189,8 @@ function Prediction() {
             ).length;
 
         const ok =
-            processedPredictions.filter(
-                (product) =>
-                    !product.needsReplenishment
-            ).length;
+            processedPredictions.length -
+            replenishment;
 
         return {
             total: processedPredictions.length,
@@ -135,21 +200,62 @@ function Prediction() {
 
     }, [processedPredictions]);
 
+
+    const totalPages =
+        Math.max(
+            1,
+            Math.ceil(
+                processedPredictions.length /
+                ITEMS_PER_PAGE
+            )
+        );
+
+
+    const currentPage =
+        Math.min(
+            page,
+            totalPages
+        );
+
+
+    const visiblePredictions =
+        processedPredictions.slice(
+            (currentPage - 1) * ITEMS_PER_PAGE,
+            currentPage * ITEMS_PER_PAGE
+        );
+
+
     const formatQuantity = (value) => {
 
-        return Number(value ?? 0).toLocaleString(
-            "es-CO"
+        return Number(value ?? 0)
+            .toLocaleString("es-CO");
+
+    };
+
+
+    const handlePreviousPage = () => {
+
+        setPage((currentPage) =>
+            Math.max(
+                1,
+                currentPage - 1
+            )
         );
 
     };
 
-    const getConfidenceLabel = (hasEnoughData) => {
 
-        return hasEnoughData
-            ? "Confiable"
-            : "Baja confianza";
+    const handleNextPage = () => {
+
+        setPage((currentPage) =>
+            Math.min(
+                totalPages,
+                currentPage + 1
+            )
+        );
 
     };
+
 
     if (loading) {
 
@@ -176,6 +282,7 @@ function Prediction() {
 
     }
 
+
     return (
 
         <div className="prediction-page">
@@ -189,26 +296,131 @@ function Prediction() {
                     </h1>
 
                     <p>
-                        Consulta la demanda estimada de tus productos
+                        Demanda estimada y reabastecimiento
                         para los próximos 7 días.
                     </p>
 
                 </div>
 
-                <button
-                    type="button"
-                    className="prediction-refresh-button"
-                    onClick={loadPredictions}
-                    title="Actualizar predicciones"
-                >
 
-                    <RefreshCw size={17} />
+                <div className="prediction-header-actions">
 
-                    Actualizar
+                    <button
+                        type="button"
+                        className="prediction-info-button"
+                        onClick={() =>
+                            setShowInfo(
+                                (current) => !current
+                            )
+                        }
+                        title="Cómo funciona la predicción"
+                        aria-expanded={showInfo}
+                    >
 
-                </button>
+                        <Info size={17} />
+
+                        Información
+
+                    </button>
+
+
+                    <button
+                        type="button"
+                        className="prediction-refresh-button"
+                        onClick={loadPredictions}
+                        title="Actualizar predicciones"
+                    >
+
+                        <RefreshCw size={17} />
+
+                        Actualizar
+
+                    </button>
+
+                </div>
 
             </header>
+
+
+            {showInfo && (
+
+                <section className="prediction-info-panel">
+
+                    <div className="prediction-info-panel-icon">
+
+                        <Info size={19} />
+
+                    </div>
+
+
+                    <div>
+
+                        <h3>
+                            ¿Cómo funciona la predicción?
+                        </h3>
+
+
+                        <p>
+                            El sistema analiza el historial
+                            de ventas de cada producto para
+                            estimar cuántas unidades podrían
+                            venderse durante los próximos
+                            7 días.
+                        </p>
+
+
+                        <p>
+                            La predicción puede generarse
+                            desde el primer día de historial
+                            disponible.
+                        </p>
+
+
+                        <p>
+                            Cuando hay menos de
+                            <strong> 30 días de historial </strong>
+                            la predicción está disponible,
+                            pero debe interpretarse con
+                            cautela porque todavía no se
+                            considera confiable.
+                        </p>
+
+
+                        <p>
+                            A partir de
+                            <strong> 30 días de historial </strong>
+                            la predicción se considera
+                            confiable.
+                        </p>
+
+
+                        <p>
+                            Para entrenar el modelo se utilizan
+                            como máximo los
+                            <strong> últimos 60 días </strong>
+                            disponibles.
+                        </p>
+
+
+                        <p>
+                            El pedido recomendado considera
+                            la demanda estimada y el stock
+                            actual del producto.
+                        </p>
+
+
+                        <p className="prediction-info-note">
+                            Recuerda: una predicción es una
+                            estimación y no garantiza la cantidad
+                            exacta de ventas futuras.
+                        </p>
+
+                    </div>
+
+                </section>
+
+            )}
+
 
             {error && (
 
@@ -224,6 +436,7 @@ function Prediction() {
 
             )}
 
+
             {!error && (
 
                 <>
@@ -233,7 +446,9 @@ function Prediction() {
                         <div className="prediction-summary-card">
 
                             <div className="prediction-summary-icon">
+
                                 <PackageOpen size={19} />
+
                             </div>
 
                             <div>
@@ -250,10 +465,13 @@ function Prediction() {
 
                         </div>
 
+
                         <div className="prediction-summary-card prediction-summary-replenishment">
 
                             <div className="prediction-summary-icon">
+
                                 <AlertTriangle size={19} />
+
                             </div>
 
                             <div>
@@ -270,10 +488,13 @@ function Prediction() {
 
                         </div>
 
+
                         <div className="prediction-summary-card prediction-summary-ok">
 
                             <div className="prediction-summary-icon">
+
                                 <CheckCircle2 size={19} />
+
                             </div>
 
                             <div>
@@ -292,360 +513,290 @@ function Prediction() {
 
                     </section>
 
-                    <section className="prediction-content">
 
-                        <div className="prediction-table-card">
+                    <section className="prediction-table-card">
 
-                            <div className="prediction-table-header">
+                        <div className="prediction-table-header">
 
-                                <div>
+                            <div>
 
-                                    <h2>
-                                        Reabastecimiento
-                                    </h2>
+                                <h2>
+                                    Reabastecimiento
+                                </h2>
 
-                                    <p>
-                                        Productos ordenados por prioridad.
-                                    </p>
-
-                                </div>
-
-                                <Info
-                                    size={18}
-                                    className="prediction-info-icon"
-                                    title="La predicción es generada para los próximos 7 días. Se considera confiable desde 30 días de historial."
-                                />
+                                <p>
+                                    Productos ordenados por
+                                    necesidad de reabastecimiento.
+                                </p>
 
                             </div>
 
-                            <div className="prediction-table-wrapper">
 
-                                <table className="prediction-table">
+                            <span className="prediction-total-label">
 
-                                    <thead>
+                                {processedPredictions.length} productos
 
-                                        <tr>
-
-                                            <th>
-                                                Producto
-                                            </th>
-
-                                            <th>
-                                                Stock actual
-                                            </th>
-
-                                            <th>
-                                                Demanda 7 días
-                                            </th>
-
-                                            <th>
-                                                Pedido recomendado
-                                            </th>
-
-                                            <th>
-                                                Estado
-                                            </th>
-
-                                        </tr>
-
-                                    </thead>
-
-                                    <tbody>
-
-                                        {processedPredictions.length === 0 ? (
-
-                                            <tr>
-
-                                                <td
-                                                    colSpan="5"
-                                                    className="prediction-empty"
-                                                >
-                                                    No hay predicciones disponibles.
-                                                </td>
-
-                                            </tr>
-
-                                        ) : (
-
-                                            processedPredictions.map(
-                                                (prediction) => (
-
-                                                    <tr
-                                                        key={prediction.productId}
-                                                        className={
-                                                            selectedProduct?.productId ===
-                                                            prediction.productId
-                                                                ? "prediction-row selected"
-                                                                : "prediction-row"
-                                                        }
-                                                        onClick={() =>
-                                                            setSelectedProduct(
-                                                                prediction
-                                                            )
-                                                        }
-                                                    >
-
-                                                        <td className="prediction-product-name">
-                                                            {prediction.productName}
-                                                        </td>
-
-                                                        <td>
-                                                            {formatQuantity(
-                                                                prediction.currentStock
-                                                            )}
-                                                        </td>
-
-                                                        <td>
-
-                                                            <div className="prediction-demand-cell">
-
-                                                                <strong>
-                                                                    {formatQuantity(
-                                                                        prediction.forecast7d
-                                                                    )}
-                                                                </strong>
-
-                                                                {!prediction.hasEnoughData && (
-
-                                                                    <span
-                                                                        className="prediction-confidence"
-                                                                        title="La predicción se basa en menos de 30 días de historial."
-                                                                    >
-                                                                        <Info size={14} />
-                                                                    </span>
-
-                                                                )}
-
-                                                            </div>
-
-                                                        </td>
-
-                                                        <td>
-
-                                                            <strong className="prediction-order-quantity">
-
-                                                                {formatQuantity(
-                                                                    prediction.recommendedOrder
-                                                                )}
-
-                                                            </strong>
-
-                                                        </td>
-
-                                                        <td>
-
-                                                            {prediction.needsReplenishment ? (
-
-                                                                <span className="prediction-status prediction-status-replenishment">
-
-                                                                    <AlertTriangle
-                                                                        size={14}
-                                                                    />
-
-                                                                    Reabastecer
-
-                                                                </span>
-
-                                                            ) : (
-
-                                                                <span className="prediction-status prediction-status-ok">
-
-                                                                    <CheckCircle2
-                                                                        size={14}
-                                                                    />
-
-                                                                    OK
-
-                                                                </span>
-
-                                                            )}
-
-                                                        </td>
-
-                                                    </tr>
-
-                                                )
-                                            )
-
-                                        )}
-
-                                    </tbody>
-
-                                </table>
-
-                            </div>
+                            </span>
 
                         </div>
 
-                        {selectedProduct && (
 
-                            <aside className="prediction-detail">
+                        <div className="prediction-table-wrapper">
 
-                                <div className="prediction-detail-header">
+                            <table className="prediction-table">
 
-                                    <div>
+                                <thead>
 
-                                        <span>
+                                    <tr>
+
+                                        <th>
                                             Producto
-                                        </span>
+                                        </th>
 
-                                        <h2>
-                                            {selectedProduct.productName}
-                                        </h2>
-
-                                    </div>
-
-                                    <button
-                                        type="button"
-                                        className="prediction-detail-close"
-                                        onClick={() =>
-                                            setSelectedProduct(null)
-                                        }
-                                        title="Cerrar detalle"
-                                    >
-                                        ×
-                                    </button>
-
-                                </div>
-
-                                <div className="prediction-detail-stats">
-
-                                    <div className="prediction-detail-stat">
-
-                                        <span>
+                                        <th>
                                             Stock actual
-                                        </span>
+                                        </th>
 
-                                        <strong>
-                                            {formatQuantity(
-                                                selectedProduct.currentStock
-                                            )}
-                                        </strong>
+                                        <th>
+                                            Demanda 7 días
+                                        </th>
 
-                                    </div>
-
-                                    <div className="prediction-detail-stat">
-
-                                        <span>
-                                            Demanda próxima semana
-                                        </span>
-
-                                        <strong>
-                                            {formatQuantity(
-                                                selectedProduct.forecast7d
-                                            )}
-                                        </strong>
-
-                                    </div>
-
-                                    <div className="prediction-detail-stat">
-
-                                        <span>
+                                        <th>
                                             Pedido recomendado
-                                        </span>
+                                        </th>
 
-                                        <strong>
-                                            {formatQuantity(
-                                                selectedProduct.recommendedOrder
-                                            )}
-                                        </strong>
+                                        <th>
+                                            Estado
+                                        </th>
 
-                                    </div>
+                                    </tr>
 
-                                </div>
+                                </thead>
 
-                                <div className="prediction-detail-confidence">
 
-                                    {selectedProduct.hasEnoughData ? (
+                                <tbody>
 
-                                        <>
+                                    {visiblePredictions.length === 0 ? (
 
-                                            <CheckCircle2 size={17} />
+                                        <tr>
 
-                                            <div>
+                                            <td
+                                                colSpan="5"
+                                                className="prediction-empty"
+                                            >
+                                                No hay predicciones disponibles.
+                                            </td>
 
-                                                <strong>
-                                                    Predicción confiable
-                                                </strong>
-
-                                                <p>
-                                                    Basada en al menos 30 días
-                                                    de historial.
-                                                </p>
-
-                                            </div>
-
-                                        </>
+                                        </tr>
 
                                     ) : (
 
-                                        <>
+                                        visiblePredictions.map(
+                                            (prediction) => (
 
-                                            <Info size={17} />
+                                                <tr
+                                                    key={
+                                                        prediction.productId
+                                                    }
+                                                    className="prediction-row"
+                                                    onClick={() =>
+                                                        setSelectedProduct(
+                                                            prediction
+                                                        )
+                                                    }
+                                                    tabIndex="0"
+                                                    onKeyDown={(
+                                                        event
+                                                    ) => {
 
-                                            <div>
+                                                        if (
+                                                            event.key ===
+                                                                "Enter" ||
+                                                            event.key ===
+                                                                " "
+                                                        ) {
 
-                                                <strong>
-                                                    Baja confianza
-                                                </strong>
+                                                            event.preventDefault();
 
-                                                <p>
-                                                    La predicción está disponible,
-                                                    pero todavía no hay 30 días
-                                                    de historial.
-                                                </p>
+                                                            setSelectedProduct(
+                                                                prediction
+                                                            );
 
-                                            </div>
+                                                        }
 
-                                        </>
+                                                    }}
+                                                >
+
+                                                    <td className="prediction-product-name">
+
+                                                        {
+                                                            prediction.productName
+                                                        }
+
+                                                    </td>
+
+
+                                                    <td>
+
+                                                        {
+                                                            formatQuantity(
+                                                                prediction.currentStock
+                                                            )
+                                                        }
+
+                                                    </td>
+
+
+                                                    <td>
+
+                                                        <div className="prediction-demand-cell">
+
+                                                            <strong>
+                                                                {
+                                                                    formatQuantity(
+                                                                        prediction.forecast7d
+                                                                    )
+                                                                }
+                                                            </strong>
+
+
+                                                            {!prediction.hasEnoughData && (
+
+                                                                <span
+                                                                    className="prediction-confidence"
+                                                                    title="Esta predicción todavía no es confiable porque tiene menos de 30 días de historial."
+                                                                >
+
+                                                                    <Info
+                                                                        size={14}
+                                                                    />
+
+                                                                </span>
+
+                                                            )}
+
+                                                        </div>
+
+                                                    </td>
+
+
+                                                    <td>
+
+                                                        <strong className="prediction-order-quantity">
+
+                                                            {
+                                                                formatQuantity(
+                                                                    prediction.recommendedOrder
+                                                                )
+                                                            }
+
+                                                        </strong>
+
+                                                    </td>
+
+
+                                                    <td>
+
+                                                        {prediction.needsReplenishment ? (
+
+                                                            <span className="prediction-status prediction-status-replenishment">
+
+                                                                <AlertTriangle
+                                                                    size={14}
+                                                                />
+
+                                                                Reabastecer
+
+                                                            </span>
+
+                                                        ) : (
+
+                                                            <span className="prediction-status prediction-status-ok">
+
+                                                                <CheckCircle2
+                                                                    size={14}
+                                                                />
+
+                                                                OK
+
+                                                            </span>
+
+                                                        )}
+
+                                                    </td>
+
+                                                </tr>
+
+                                            )
+                                        )
 
                                     )}
 
-                                </div>
+                                </tbody>
 
-                                <div className="prediction-detail-action">
+                            </table>
 
-                                    {selectedProduct.needsReplenishment ? (
+                        </div>
 
-                                        <>
 
-                                            <strong>
-                                                Se recomienda reabastecer
-                                            </strong>
+                        <div className="prediction-pagination">
 
-                                            <p>
-                                                El stock actual es inferior
-                                                a la demanda estimada para
-                                                los próximos 7 días.
-                                            </p>
+                            <button
+                                type="button"
+                                disabled={currentPage === 1}
+                                onClick={
+                                    handlePreviousPage
+                                }
+                                title="Página anterior"
+                            >
 
-                                        </>
+                                <ChevronLeft size={16} />
 
-                                    ) : (
+                                Anterior
 
-                                        <>
+                            </button>
 
-                                            <strong>
-                                                Stock suficiente
-                                            </strong>
 
-                                            <p>
-                                                El stock actual cubre la
-                                                demanda estimada para la
-                                                próxima semana.
-                                            </p>
+                            <span>
 
-                                        </>
+                                Página {currentPage} de {totalPages}
 
-                                    )}
+                            </span>
 
-                                </div>
 
-                            </aside>
+                            <button
+                                type="button"
+                                disabled={
+                                    currentPage >= totalPages
+                                }
+                                onClick={
+                                    handleNextPage
+                                }
+                                title="Página siguiente"
+                            >
 
-                        )}
+                                Siguiente
+
+                                <ChevronRight size={16} />
+
+                            </button>
+
+                        </div>
 
                     </section>
+
+
+                    <PredictionDetailModal
+                        product={selectedProduct}
+                        open={
+                            Boolean(
+                                selectedProduct
+                            )
+                        }
+                        onClose={() =>
+                            setSelectedProduct(null)
+                        }
+                    />
 
                 </>
 

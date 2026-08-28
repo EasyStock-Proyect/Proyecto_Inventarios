@@ -18,6 +18,7 @@ function Login() {
     const [password, setPassword] = useState("");
 
     const [serverError, setServerError] = useState("");
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
     const [errors, setErrors] = useState({
@@ -58,12 +59,17 @@ function Login() {
 
     const handleLogin = async () => {
 
+        if (loading) {
+            return;
+        }
+
         if (!validacionForm()) {
             return;
         }
 
         try {
 
+            setLoading(true);
             setServerError("");
 
             const response = await login({
@@ -77,13 +83,22 @@ function Login() {
 
         } catch (error) {
 
+            const status =
+                error.cause?.response?.status ||
+                error.response?.status;
+
             setServerError(
-                error.response?.data?.message ||
-                error.message ||
-                "Error al iniciar sesión."
-            )
+                status === 401
+                    ? "Credenciales inválidas."
+                    : error.response?.data?.message ||
+                    error.message ||
+                    "Error al iniciar sesión."
+            );
+        } finally {
+
+            setLoading(false);
         }
-    }
+    };
 
     return (
         <div className="login-container">
@@ -126,8 +141,13 @@ function Login() {
                         Minimo 8 caracteres
                     </div>
                     <div className="button-container">
-                        <Button type="submit">
-                            Iniciar sesión
+                        <Button
+                            type="submit"
+                            disabled={loading}
+                        >
+                            {loading
+                                ? "Iniciando sesión..."
+                                : "Iniciar sesión"}
                         </Button>
                     </div>
 

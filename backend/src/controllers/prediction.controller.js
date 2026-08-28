@@ -17,6 +17,27 @@ const getPredictions = async (req, res, next) => {
 
 };
 
+const getPredictionDetail = async (req, res, next) => {
+
+    try {
+
+        const detail =
+            await predictionService.getPredictionDetail(
+                req.user.id,
+                req.params.productId
+            );
+
+        res.status(200).json(detail);
+
+    } catch (error) {
+
+        next(error);
+
+    }
+
+};
+
 module.exports = {
-    getPredictions
+    getPredictions,
+    getPredictionDetail
 };

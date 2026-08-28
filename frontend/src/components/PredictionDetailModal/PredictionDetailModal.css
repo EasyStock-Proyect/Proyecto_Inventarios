@@ -1,0 +1,306 @@
+.prediction-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    background: rgba(17, 24, 39, 0.48);
+}
+
+.prediction-modal {
+    width: min(900px, 100%);
+    max-height: 90vh;
+
+    display: flex;
+    flex-direction: column;
+
+    overflow: hidden;
+
+    border-radius: 22px;
+
+    background: white;
+
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+.prediction-modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    gap: 20px;
+
+    padding: 22px 24px;
+
+    border-bottom: 1px solid #edf0f2;
+}
+
+.prediction-modal-title-container span {
+    display: block;
+
+    margin-bottom: 5px;
+
+    color: #6b7280;
+
+    font-size: 12px;
+}
+
+.prediction-modal-title-container h2 {
+    margin: 0;
+
+    color: #1f2937;
+
+    font-size: 22px;
+    line-height: 1.3;
+}
+
+.prediction-modal-close {
+    width: 36px;
+    height: 36px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    border: none;
+    border-radius: 10px;
+
+    background: #f3f4f6;
+    color: #374151;
+
+    cursor: pointer;
+}
+
+.prediction-modal-close:hover {
+    background: #e5e7eb;
+}
+
+.prediction-modal-body {
+    overflow-y: auto;
+
+    padding: 24px;
+}
+
+.prediction-modal-summary {
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1.4fr)
+        minmax(0, 1fr)
+        minmax(0, 1fr);
+
+    gap: 12px;
+
+    margin-bottom: 18px;
+}
+
+.prediction-modal-main-stat,
+.prediction-modal-stat {
+    padding: 17px;
+
+    border-radius: 16px;
+
+    background: #f8fafc;
+}
+
+.prediction-modal-main-stat {
+    background: #f1f8f2;
+}
+
+.prediction-modal-main-stat span,
+.prediction-modal-stat span {
+    display: block;
+
+    margin-bottom: 6px;
+
+    color: #6b7280;
+
+    font-size: 12px;
+}
+
+.prediction-modal-main-stat strong {
+    color: #2e7d32;
+
+    font-size: 28px;
+}
+
+.prediction-modal-main-stat small {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.prediction-modal-stat strong {
+    color: #1f2937;
+
+    font-size: 22px;
+}
+
+.prediction-modal-confidence {
+    display: flex;
+    align-items: flex-start;
+
+    gap: 10px;
+
+    padding: 15px;
+
+    margin-bottom: 14px;
+
+    border-radius: 15px;
+}
+
+.prediction-modal-confidence-good {
+    background: #eaf6eb;
+    color: #256b2b;
+}
+
+.prediction-modal-confidence-warning {
+    background: #fff8e8;
+    color: #8a5a00;
+}
+
+.prediction-modal-confidence strong {
+    display: block;
+
+    margin-bottom: 4px;
+
+    font-size: 14px;
+}
+
+.prediction-modal-confidence p {
+    margin: 0;
+
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.prediction-modal-confidence-range {
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 12px;
+
+    margin-bottom: 24px;
+}
+
+.prediction-modal-confidence-range > div {
+    padding: 13px 15px;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+}
+
+.prediction-modal-confidence-range span {
+    display: block;
+
+    margin-bottom: 4px;
+
+    color: #6b7280;
+
+    font-size: 11px;
+}
+
+.prediction-modal-confidence-range strong {
+    color: #1f2937;
+
+    font-size: 17px;
+}
+
+.prediction-modal-chart-section {
+    padding-top: 4px;
+}
+
+.prediction-modal-section-title {
+    margin-bottom: 12px;
+}
+
+.prediction-modal-section-title h3 {
+    margin: 0;
+
+    color: #1f2937;
+
+    font-size: 17px;
+}
+
+.prediction-modal-section-title p {
+    margin: 4px 0 0;
+
+    color: #6b7280;
+
+    font-size: 12px;
+}
+
+.prediction-modal-state {
+    min-height: 250px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #6b7280;
+
+    font-size: 14px;
+}
+
+.prediction-modal-error {
+    display: flex;
+    align-items: center;
+
+    gap: 8px;
+
+    margin: 20px;
+    padding: 14px;
+
+    border-radius: 13px;
+
+    background: #fef2f2;
+    color: #b91c1c;
+
+    font-size: 14px;
+}
+
+@media (max-width: 700px) {
+
+    .prediction-modal-overlay {
+        align-items: flex-end;
+
+        padding: 0;
+    }
+
+    .prediction-modal {
+        width: 100%;
+        max-height: 92vh;
+
+        border-radius:
+            22px 22px 0 0;
+    }
+
+    .prediction-modal-header {
+        padding: 18px;
+    }
+
+    .prediction-modal-body {
+        padding: 18px;
+    }
+
+    .prediction-modal-summary {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .prediction-modal-main-stat {
+        grid-column: 1 / -1;
+    }
+
+    .prediction-modal-confidence-range {
+        grid-template-columns: 1fr 1fr;
+    }
+
+}
