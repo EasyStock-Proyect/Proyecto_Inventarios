@@ -15,12 +15,12 @@
 
 .cart-header h2 {
     margin: 0 0 4px;
-    font-size: 15px;
+    font-size: 19px;
 }
 
 .cart-header span {
     color: #555;
-    font-size: 12px;
+    font-size: 13px;
 }
 
 .cart-content {
@@ -72,7 +72,7 @@
     align-items: center;
     justify-content: space-between;
     margin-bottom: 14px;
-    font-size: 13px;
+    font-size: 14px;
 }
 
 .cart-total strong {
@@ -87,7 +87,7 @@
     border-radius: 22px;
     background: #116b29;
     color: white;
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 600;
     cursor: pointer;
 }

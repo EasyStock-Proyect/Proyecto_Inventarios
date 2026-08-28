@@ -31,14 +31,14 @@
 .section-heading h2 {
     margin: 0 0 4px;
     color: #111111;
-    font-size: 22px;
+    font-size: 30px;
     font-weight: 600;
 }
 
 .section-heading p {
     margin: 0;
     color: #444444;
-    font-size: 13px;
+    font-size: 15px;
 }
 
 /* Historial */
@@ -58,13 +58,13 @@
 
 .history-header h2 {
     margin: 0 0 4px;
-    font-size: 22px;
+    font-size: 30px;
 }
 
 .history-header p {
     margin: 0;
     color: #555555;
-    font-size: 13px;
+    font-size: 15px;
 }
 
 .export-button {
@@ -103,7 +103,7 @@
 
 .sales-date-field label {
     color: var(--muted-foreground);
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 500;
 }
 
@@ -115,7 +115,7 @@
     outline: none;
     background: var(--card);
     color: var(--foreground);
-    font-size: 13px;
+    font-size: 14px;
     box-sizing: border-box;
     transition: 0.2s;
 }
@@ -130,7 +130,7 @@
     height: 36px;
     padding: 0 14px;
     border-radius: 20px;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 600;
     cursor: pointer;
     transition: 0.2s;
@@ -180,7 +180,7 @@
     border-radius: 8px;
     background: var(--background);
     color: var(--foreground);
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 500;
     cursor: pointer;
     transition: 0.2s ease;
@@ -200,7 +200,7 @@
 }
 
 .sales-pagination span, .sales-history-pagination span {
-    font-size: 13px;
+    font-size: 14px;
     color: var(--muted-foreground);
     white-space: nowrap;
 }
