@@ -11,4 +11,10 @@ router.get(
     predictionController.getPredictions
 );
 
+router.get(
+    "/:productId/detail",
+    authMiddleware,
+    predictionController.getPredictionDetail
+);
+
 module.exports = router;

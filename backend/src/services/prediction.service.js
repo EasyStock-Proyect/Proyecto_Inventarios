@@ -173,7 +173,232 @@ function clearPredictionsCache(userId) {
     predictionCache.clear();
 }
 
+async function getPredictionDetail(userId, productId) {
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const historyStart = new Date(today);
+    historyStart.setDate(historyStart.getDate() - 13);
+
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const forecastEnd = new Date(today);
+    forecastEnd.setDate(forecastEnd.getDate() + 7);
+
+    const product = await prisma.product.findFirst({
+        where: {
+            id: productId,
+            userId,
+            deletedAt: null
+        },
+        select: {
+            id: true,
+            name: true,
+            stockCurrent: true
+        }
+    });
+
+    if (!product) {
+        const error = new Error("Producto no encontrado.");
+        error.status = 404;
+        throw error;
+    }
+
+    const [sales, predictions] = await Promise.all([
+        prisma.saleItem.findMany({
+            where: {
+                productId,
+                sale: {
+                    userId,
+                    createdAt: {
+                        gte: historyStart,
+                        lt: tomorrow
+                    }
+                }
+            },
+            select: {
+                quantity: true,
+                sale: {
+                    select: {
+                        createdAt: true
+                    }
+                }
+            },
+            orderBy: {
+                sale: {
+                    createdAt: "asc"
+                }
+            }
+        }),
+
+        prisma.demandPrediction.findMany({
+            where: {
+                userId,
+                productId,
+                forecastDate: {
+                    gte: today,
+                    lt: forecastEnd
+                }
+            },
+            orderBy: {
+                forecastDate: "asc"
+            },
+            select: {
+                forecastDate: true,
+                predictedQuantity: true,
+                lowerBound: true,
+                upperBound: true,
+                hasEnoughData: true,
+                trainingDays: true
+            }
+        })
+    ]);
+
+    const historyMap = new Map();
+
+    for (let index = 0; index < 14; index++) {
+
+        const date = new Date(historyStart);
+        date.setDate(date.getDate() + index);
+
+        const key = date.toISOString().split("T")[0];
+
+        historyMap.set(key, 0);
+    }
+
+    for (const saleItem of sales) {
+
+        const key = new Date(
+            saleItem.sale.createdAt
+        ).toISOString().split("T")[0];
+
+        if (historyMap.has(key)) {
+            historyMap.set(
+                key,
+                historyMap.get(key) + saleItem.quantity
+            );
+        }
+    }
+
+    const history = Array.from(
+        historyMap.entries()
+    ).map(([date, quantity]) => ({
+        date,
+        quantity
+    }));
+
+    const predictionMap = new Map();
+
+    for (const prediction of predictions) {
+
+        const date =
+            new Date(prediction.forecastDate)
+                .toISOString()
+                .split("T")[0];
+
+        predictionMap.set(date, {
+            date,
+            predictedQuantity:
+                Number(prediction.predictedQuantity),
+            lowerBound:
+                Number(prediction.lowerBound),
+            upperBound:
+                Number(prediction.upperBound)
+        });
+    }
+
+    const forecast = [];
+
+    for (let index = 1; index <= 7; index++) {
+
+        const date = new Date(today);
+        date.setDate(date.getDate() + index);
+
+        const key = date.toISOString().split("T")[0];
+
+        forecast.push(
+            predictionMap.get(key) || {
+                date: key,
+                predictedQuantity: null,
+                lowerBound: null,
+                upperBound: null
+            }
+        );
+    }
+
+    const availablePredictions =
+        predictions;
+
+    const forecast7d =
+        availablePredictions.reduce(
+            (total, prediction) =>
+                total +
+                Number(prediction.predictedQuantity),
+            0
+        );
+
+    const lowerBound =
+        availablePredictions.reduce(
+            (total, prediction) =>
+                total +
+                Number(prediction.lowerBound),
+            0
+        );
+
+    const upperBound =
+        availablePredictions.reduce(
+            (total, prediction) =>
+                total +
+                Number(prediction.upperBound),
+            0
+        );
+
+    const hasEnoughData =
+        availablePredictions.length > 0 &&
+        availablePredictions.every(
+            (prediction) =>
+                prediction.hasEnoughData
+        );
+
+    const trainingDays =
+        availablePredictions.length > 0
+            ? Math.max(
+                ...availablePredictions.map(
+                    (prediction) =>
+                        prediction.trainingDays
+                )
+            )
+            : 0;
+
+    const recommendedOrder = Math.max(
+        0,
+        Math.ceil(
+            upperBound -
+            product.stockCurrent
+        )
+    );
+
+    return {
+        productId: product.id,
+        productName: product.name,
+        currentStock: product.stockCurrent,
+        forecast7d: Math.ceil(forecast7d),
+        recommendedOrder,
+        confidence: {
+            lowerBound: Math.ceil(lowerBound),
+            upperBound: Math.ceil(upperBound)
+        },
+        hasEnoughData,
+        trainingDays,
+        history,
+        forecast
+    };
+}
+
 module.exports = {
     getPredictions,
-    clearPredictionsCache
+    clearPredictionsCache,
+    getPredictionDetail
 };

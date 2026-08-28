@@ -1,0 +1,39 @@
+.prediction-chart {
+    width: 100%;
+}
+
+.prediction-chart-wrapper {
+    width: 100%;
+    min-height: 280px;
+}
+
+.prediction-chart-note {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 6px;
+    color: #6b7280;
+    font-size: 11px;
+}
+
+.prediction-chart-note span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.prediction-chart-history-dot,
+.prediction-chart-forecast-dot {
+    width: 20px;
+    height: 3px;
+    border-radius: 3px;
+    display: inline-block;
+}
+
+.prediction-chart-history-dot {
+    background: #6b7280;
+}
+
+.prediction-chart-forecast-dot {
+    background: #2e7d32;
+}
