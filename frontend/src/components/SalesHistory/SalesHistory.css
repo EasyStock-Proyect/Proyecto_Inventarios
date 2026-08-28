@@ -50,7 +50,7 @@
 .history-sale-header>span,
 .history-sale-header>strong {
     min-width: 0;
-    font-size: 12px;
+    font-size: 13px;
 }
 
 .history-sale-header>strong {
@@ -63,7 +63,7 @@
     border-radius: 12px;
     background: var(--secondary);
     color: var(--primary);
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 600;
     white-space: nowrap;
 }
@@ -101,7 +101,7 @@
 .history-item span,
 .history-item strong {
     min-width: 0;
-    font-size: 11px;
+    font-size: 12px;
     color: var(--muted-foreground);
 }
 
