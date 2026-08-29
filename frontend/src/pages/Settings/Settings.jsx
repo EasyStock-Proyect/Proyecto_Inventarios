@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { FiCamera, FiLock, FiUnlock } from "react-icons/fi";
 import api from "../../api/api";
@@ -20,28 +20,22 @@ const DEFAULT_FORM = {
 function Settings() {
     const { user, setUser } = useOutletContext();
     const fileInputRef = useRef(null);
-    const [form, setForm] = useState(DEFAULT_FORM);
+    const [form, setForm] = useState(() => ({
+        ...DEFAULT_FORM,
+        fullName: user?.fullName || "",
+        email: user?.email || "",
+        businessName: user?.businessName || "",
+        businessType: user?.businessType || "Tienda",
+        address: user?.address || "",
+        profileImage: user?.profileImage || "",
+        notificationEmail: user?.notificationEmail || user?.email || "",
+    }));
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
     const [imageError, setImageError] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-    useEffect(() => {
-        if (!user) return;
-
-        setForm((previousForm) => ({
-            ...previousForm,
-            fullName: user.fullName || "",
-            email: user.email || "",
-            businessName: user.businessName || "",
-            businessType: user.businessType || "Tienda",
-            address: user.address || "",
-            profileImage: user.profileImage || "",
-            notificationEmail: user.notificationEmail || user.email || "",
-        }));
-    }, [user]);
 
     const initials = useMemo(() => {
         const baseName = form.fullName || form.businessName || "MG";
