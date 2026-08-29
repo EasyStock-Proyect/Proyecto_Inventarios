@@ -56,7 +56,7 @@ function MainLayout() {
                 />
 
                 <main className="layout-content">
-                    <Outlet />
+                    <Outlet context={{ user, setUser }} />
                 </main>
 
             </div>

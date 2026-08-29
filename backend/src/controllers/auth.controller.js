@@ -73,6 +73,25 @@ async function getCurrentUser(req, res) {
 
 }
 
+async function updateCurrentUser(req, res, next) {
+
+    try {
+
+        const user = await authService.updateCurrentUser(
+            req.user.id,
+            req.body
+        );
+
+        res.json(user);
+
+    } catch (error) {
+
+        next(error);
+
+    }
+
+}
+
 async function refresh(req, res, next) {
 
     try {
@@ -150,6 +169,7 @@ module.exports = {
     register,
     login,
     getCurrentUser,
+    updateCurrentUser,
     refresh,
     logout
 };

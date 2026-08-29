@@ -112,8 +112,11 @@ async function getCurrentUser(userId) {
 
             id: true,
             email: true,
+            fullName: true,
             businessName: true,
-            businessType: true
+            businessType: true,
+            address: true,
+            profileImage: true
 
         }
 
@@ -126,6 +129,60 @@ async function getCurrentUser(userId) {
 
     }
 
+
+    return user;
+
+}
+
+async function updateCurrentUser(userId, data = {}) {
+
+    const businessName = data.businessName?.trim();
+    const businessType = data.businessType?.trim();
+    const fullName = data.fullName?.trim();
+    const address = data.address?.trim() || null;
+    const profileImage = data.profileImage?.trim() || null;
+
+    if (!businessName) {
+        throw new Error("El nombre del negocio es obligatorio.");
+    }
+
+    if (!businessType) {
+        throw new Error("El tipo de comercio es obligatorio.");
+    }
+
+    const updateData = {
+        fullName: fullName || null,
+        businessName,
+        businessType,
+        address,
+        profileImage
+    };
+
+    if (data.password) {
+
+        if (data.password.length < 8) {
+            throw new Error("La contraseña debe tener mínimo 8 caracteres");
+        }
+
+        updateData.passwordHash = await bcrypt.hash(data.password, 10);
+
+    }
+
+    const user = await prisma.user.update({
+        where: {
+            id: userId
+        },
+        data: updateData,
+        select: {
+            id: true,
+            email: true,
+            fullName: true,
+            businessName: true,
+            businessType: true,
+            address: true,
+            profileImage: true
+        }
+    });
 
     return user;
 
@@ -240,6 +297,7 @@ module.exports = {
     register,
     login,
     getCurrentUser,
+    updateCurrentUser,
     refreshSession,
     logout
 };

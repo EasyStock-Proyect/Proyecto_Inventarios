@@ -131,8 +131,11 @@ describe("getCurrentUser", () => {
             select: {
                 id: true,
                 email: true,
+                fullName: true,
                 businessName: true,
-                businessType: true
+                businessType: true,
+                address: true,
+                profileImage: true
             }
         });
     });
