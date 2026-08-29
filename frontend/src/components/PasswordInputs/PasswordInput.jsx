@@ -1,12 +1,11 @@
 import { useState } from "react";
+import { FiEye, FiEyeOff, FiLock, FiUnlock } from "react-icons/fi";
 import "./PasswordInput.css"
-import open from "../../assets/icons/candado-abierto.webp"
-import close from "../../assets/icons/candado-cerrado.webp"
 
-function PasswordInput({value, onChange}) {
+function PasswordInput({ value, onChange }) {
     const [showPassword, setShowPassword] = useState(false);
+
     return (
-        <>
         <div className="password-input">
             <input
                 type={showPassword ? "text" : "password"}
@@ -18,15 +17,21 @@ function PasswordInput({value, onChange}) {
                 type="button"
                 className="toggle-password"
                 onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
             >
-                <img
-                    src={!showPassword ? close : open}
-                    alt={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
-                    className="password-icon"
-                />
+                {showPassword ? (
+                    <FiUnlock className="password-icon" />
+                ) : (
+                    <FiLock className="password-icon" />
+                )}
+                {showPassword ? (
+                    <FiEyeOff className="password-visibility-icon" />
+                ) : (
+                    <FiEye className="password-visibility-icon" />
+                )}
             </button>
         </div>
-        </>
     );
 }
+
 export default PasswordInput;

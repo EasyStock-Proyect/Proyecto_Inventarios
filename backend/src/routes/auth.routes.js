@@ -25,4 +25,10 @@ router.get(
     authController.getCurrentUser
 );
 
+router.put(
+    "/me",
+    authMiddleware,
+    authController.updateCurrentUser
+);
+
 module.exports = router;
