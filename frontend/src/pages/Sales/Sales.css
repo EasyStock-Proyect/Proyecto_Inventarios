@@ -228,9 +228,9 @@
 
 @media (max-width: 768px) {
     .sales-page {
-        width: calc(100% + 40px); /* 20px * 2 lados */
-        margin: -80px -20px -20px;
-        min-height: calc(100% + 100px);
+        width: 100%;
+        margin: 0;
+        min-height: auto;
     }
 }
 

@@ -63,4 +63,15 @@ describe('Settings page', () => {
     expect(mockSetUser).toHaveBeenCalled();
     expect(businessInput.value).toBe('Mi nueva tienda');
   });
+
+  it('usa un campo de texto para el tipo de comercio en lugar de botones', () => {
+    render(<Settings />);
+
+    const businessTypeInput = screen.getByLabelText(/tipo de comercio/i);
+
+    expect(businessTypeInput).toBeInTheDocument();
+    expect(businessTypeInput.tagName).toBe('INPUT');
+    expect(businessTypeInput).toHaveValue('Tienda');
+    expect(screen.queryByRole('button', { name: /tienda/i })).not.toBeInTheDocument();
+  });
 });
