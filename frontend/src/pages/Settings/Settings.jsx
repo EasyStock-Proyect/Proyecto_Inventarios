@@ -263,19 +263,14 @@ function Settings() {
                         </div>
 
                         <div className="field-group">
-                            <label>Tipo de comercio</label>
-                            <div className="segmented-control" role="tablist" aria-label="Tipo de comercio">
-                                {['Tienda', 'Papelería', 'Ferretería', 'Otro'].map((option) => (
-                                    <button
-                                        key={option}
-                                        type="button"
-                                        className={form.businessType === option ? "segment active" : "segment"}
-                                        onClick={() => updateField("businessType", option)}
-                                    >
-                                        {option}
-                                    </button>
-                                ))}
-                            </div>
+                            <label htmlFor="businessType">Tipo de comercio</label>
+                            <input
+                                id="businessType"
+                                type="text"
+                                value={form.businessType}
+                                placeholder="Ej. Tienda, Papelería, Ferretería"
+                                onChange={(event) => updateField("businessType", event.target.value)}
+                            />
                         </div>
 
                         <div className="field-group">
