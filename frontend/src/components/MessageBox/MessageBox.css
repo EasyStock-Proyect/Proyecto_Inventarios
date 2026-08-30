@@ -1,0 +1,84 @@
+.message-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 18px 20px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 180, 0, 0.35);
+    background: linear-gradient(135deg, rgba(255, 187, 0, 0.1), rgba(255, 143, 0, 0.04));
+    box-shadow: 0 8px 24px rgba(27, 36, 52, 0.08);
+    margin-bottom: 24px;
+}
+
+.message-box--warning {
+    border-color: rgba(255, 180, 0, 0.4);
+    background: linear-gradient(135deg, rgba(255, 191, 0, 0.12), rgba(255, 143, 0, 0.04));
+}
+
+.message-box__content {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    flex: 1;
+}
+
+.message-box__icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: rgba(255, 170, 0, 0.16);
+    color: #a75d00;
+    font-size: 1.3rem;
+    font-weight: 800;
+    flex-shrink: 0;
+}
+
+.message-box__copy {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.message-box__copy h3 {
+    margin: 0;
+    font-size: 1.05rem;
+    color: #1e293b;
+}
+
+.message-box__copy p {
+    margin: 0;
+    color: #475569;
+    font-size: 0.96rem;
+    line-height: 1.5;
+}
+
+.message-box__button {
+    border: none;
+    border-radius: 10px;
+    background: #f59e0b;
+    color: #fff;
+    font-weight: 700;
+    padding: 11px 18px;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 8px 18px rgba(245, 158, 11, 0.25);
+}
+
+.message-box__button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 22px rgba(245, 158, 11, 0.28);
+}
+
+@media (max-width: 768px) {
+    .message-box {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .message-box__button {
+        width: 100%;
+    }
+}
