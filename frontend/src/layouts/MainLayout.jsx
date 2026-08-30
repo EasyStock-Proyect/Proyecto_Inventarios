@@ -1,15 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { getCurrentUser } from "../services/auth.service";
-import { Outlet } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar/Sidebar";
 import Topbar from "../components/Topbar/Topbar";
-
+import MessageBox from "../components/MessageBox/MessageBox";
 
 import "./MainLayout.css";
 
 function MainLayout() {
 
-
+    const navigate = useNavigate();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [user, setUser] = useState(null);
 
@@ -37,6 +37,16 @@ function MainLayout() {
 
     }, []);
 
+    const hasIncompleteProfile = useMemo(() => {
+        if (!user) {
+            return false;
+        }
+
+        return ["fullName", "address"].some(
+            (field) => !String(user[field] ?? "").trim()
+        );
+    }, [user]);
+
     return (
 
         <div className="layout">
@@ -56,7 +66,19 @@ function MainLayout() {
                 />
 
                 <main className="layout-content">
-                    <Outlet context={{ user, setUser }} />
+                    {hasIncompleteProfile && (
+                        <MessageBox
+                            title="Completa tu perfil"
+                            message="Faltan datos importantes de tu negocio para terminar la configuración de tu cuenta."
+                            buttonLabel="Completar perfil"
+                            onClick={() => navigate("/ajustes")}
+                        />
+                    )}
+
+                    <Outlet
+                        key={user?.id ?? "loading-user"}
+                        context={{ user, setUser }}
+                    />
                 </main>
 
             </div>

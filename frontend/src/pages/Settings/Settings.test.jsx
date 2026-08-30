@@ -30,6 +30,14 @@ import api from '../../api/api';
 import Settings from './Settings';
 
 describe('Settings page', () => {
+  it('muestra el correo y el nombre del negocio ya registrados', () => {
+    render(<Settings />);
+
+    expect(screen.getByLabelText(/correo electrónico/i)).toHaveValue('admin@tienda.com');
+    expect(screen.getByLabelText(/nombre del negocio/i)).toHaveValue('Tienda La Esperanza');
+    expect(screen.getByLabelText(/correo para alertas/i)).toHaveValue('admin@tienda.com');
+  });
+
   it('permite editar el nombre del negocio y guardar cambios', async () => {
     api.put.mockResolvedValue({
       data: {
