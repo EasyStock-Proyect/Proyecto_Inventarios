@@ -67,3 +67,15 @@ h5,
 h6 {
     font-weight: 600;
 }
+
+.page-title {
+    font-size: 30px;
+    line-height: 1.2;
+    font-weight: 600;
+}
+
+@media (max-width: 650px) {
+    .page-title {
+        font-size: 24px;
+    }
+}

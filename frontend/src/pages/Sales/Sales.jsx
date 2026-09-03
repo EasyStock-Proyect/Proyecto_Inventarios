@@ -570,7 +570,7 @@ function Sales() {
 
                         <div className="section-heading">
 
-                            <h2>
+                            <h2 className="page-title">
                                 Nueva venta
                             </h2>
 
@@ -655,7 +655,7 @@ function Sales() {
 
                         <div>
 
-                            <h2>
+                            <h2 className="page-title">
                                 Historial de ventas
                             </h2>
 

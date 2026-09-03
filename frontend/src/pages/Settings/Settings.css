@@ -15,10 +15,8 @@
 }
 
 .settings-header h1 {
-    font-size: clamp(2rem, 2.3vw, 2.6rem);
     margin: 0;
     color: var(--foreground);
-    font-weight: 700;
 }
 
 .settings-header p {

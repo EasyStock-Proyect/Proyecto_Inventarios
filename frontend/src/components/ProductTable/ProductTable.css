@@ -16,8 +16,6 @@
 
 .inventory-header h1 {
     margin: 0;
-    font-size: 30px;
-    font-weight: 600;
     color: #111;
 }
 
@@ -354,10 +352,6 @@
     .inventory-title-row {
         align-items: flex-start;
         gap: 10px;
-    }
-
-    .inventory-header h1 {
-        font-size: 20px;
     }
 
     .manage-categories-button {

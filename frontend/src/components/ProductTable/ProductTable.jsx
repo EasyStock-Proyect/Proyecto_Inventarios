@@ -299,7 +299,7 @@ function ProductTable() {
 
                     <div>
 
-                        <h1>Inventario</h1>
+                        <h1 className="page-title">Inventario</h1>
 
                         <p>
 

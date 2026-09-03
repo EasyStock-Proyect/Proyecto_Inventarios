@@ -19,8 +19,7 @@
 }
 
 .dashboard-heading h1 {
-    font-size: 30px;
-    line-height: 1.2;
+    margin: 0;
 }
 
 .dashboard-heading p,
@@ -433,7 +432,4 @@
         gap: 5px;
     }
 
-    .dashboard-heading h1 {
-        font-size: 20px;
-    }
 }
