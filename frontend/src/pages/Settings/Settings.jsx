@@ -143,7 +143,7 @@ function Settings() {
         <div className="settings-container">
             <div className="settings-page">
                 <header className="settings-header">
-                    <h1>Ajustes</h1>
+                    <h1 className="page-title">Ajustes</h1>
                     <p>Gestiona tu perfil y datos del negocio</p>
                 </header>
 

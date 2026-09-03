@@ -48,7 +48,8 @@ describe("getCategories", () => {
 
         expect(prisma.category.findMany).toHaveBeenCalledWith({
             where: {
-                userId: "user1"
+                userId: "user1",
+                deletedAt: null
             },
             orderBy: {
                 name: "asc"
@@ -106,6 +107,13 @@ describe("createCategory", () => {
         ).rejects.toThrow(
             "No puedes crear más de 50 categorías."
         );
+
+        expect(prisma.category.count).toHaveBeenCalledWith({
+            where: {
+                userId: "user1",
+                deletedAt: null
+            }
+        });
     });
 
     test("debe rechazar categoría duplicada", async () => {
@@ -147,13 +155,38 @@ describe("createCategory", () => {
 
         expect(result.name).toBe("Tecnología");
     });
+
+    test("debe permitir el nombre de una categoría eliminada", async () => {
+
+        prisma.category.count.mockResolvedValue(49);
+        prisma.category.findFirst.mockResolvedValue(null);
+        prisma.category.create.mockResolvedValue({
+            id: "cat2",
+            name: "Tecnología",
+            userId: "user1",
+            deletedAt: null
+        });
+
+        await categoryService.createCategory(
+            "user1",
+            { name: "Tecnología" }
+        );
+
+        expect(prisma.category.findFirst).toHaveBeenCalledWith({
+            where: {
+                userId: "user1",
+                name: "Tecnología",
+                deletedAt: null
+            }
+        });
+    });
 });
 
 describe("updateCategory", () => {
 
     test("debe rechazar categoría inexistente", async () => {
 
-        prisma.category.findUnique.mockResolvedValue(null);
+        prisma.category.findFirst.mockResolvedValue(null);
 
         await expect(
             categoryService.updateCategory(
@@ -164,10 +197,27 @@ describe("updateCategory", () => {
         ).rejects.toThrow("Categoría no encontrada");
     });
 
+    test("no debe actualizar una categoría eliminada", async () => {
+
+        prisma.category.findFirst.mockResolvedValue(null);
+
+        await expect(
+            categoryService.updateCategory(
+                "user1",
+                "cat-deleted",
+                { name: "Nueva" }
+            )
+        ).rejects.toThrow("Categoría no encontrada");
+
+        expect(prisma.category.update).not.toHaveBeenCalled();
+    });
+
     test("debe rechazar nombre vacío", async () => {
 
-        prisma.category.findUnique.mockResolvedValue({
-            id: "cat1"
+        prisma.category.findFirst.mockResolvedValue({
+            id: "cat1",
+            userId: "user1",
+            deletedAt: null
         });
 
         await expect(
@@ -183,14 +233,20 @@ describe("updateCategory", () => {
 
     test("debe rechazar nombre duplicado", async () => {
 
-        prisma.category.findUnique.mockResolvedValue({
+        prisma.category.findFirst.mockResolvedValue({
             id: "cat1"
         });
 
-        prisma.category.findFirst.mockResolvedValue({
+        prisma.category.findFirst
+            .mockResolvedValueOnce({
+                id: "cat1",
+                userId: "user1",
+                deletedAt: null
+            })
+            .mockResolvedValueOnce({
             id: "cat2",
             name: "Tecnología"
-        });
+            });
 
         await expect(
             categoryService.updateCategory(
@@ -205,11 +261,13 @@ describe("updateCategory", () => {
 
     test("debe actualizar categoría", async () => {
 
-        prisma.category.findUnique.mockResolvedValue({
-            id: "cat1"
-        });
-
-        prisma.category.findFirst.mockResolvedValue(null);
+        prisma.category.findFirst
+            .mockResolvedValueOnce({
+                id: "cat1",
+                userId: "user1",
+                deletedAt: null
+            })
+            .mockResolvedValueOnce(null);
 
         prisma.category.update.mockResolvedValue({
             id: "cat1",
@@ -224,6 +282,14 @@ describe("updateCategory", () => {
             );
 
         expect(result.name).toBe("Nueva");
+
+        expect(prisma.category.findFirst).toHaveBeenNthCalledWith(1, {
+            where: {
+                id: "cat1",
+                userId: "user1",
+                deletedAt: null
+            }
+        });
     });
 });
 
@@ -263,20 +329,41 @@ describe("deleteCategory", () => {
             "No se puede eliminar la categoría porque tiene productos asociados."
         );
 
-        expect(prisma.category.delete).not.toHaveBeenCalled();
+        expect(prisma.category.update).not.toHaveBeenCalled();
 
+    });
+
+    test("debe validar el usuario al eliminar una categoría", async () => {
+
+        prisma.category.findFirst.mockResolvedValue(null);
+
+        await expect(
+            categoryService.deleteCategory(
+                "user1",
+                "cat-other-user"
+            )
+        ).rejects.toThrow("Categoría no encontrada");
+
+        expect(prisma.category.findFirst).toHaveBeenCalledWith({
+            where: {
+                id: "cat-other-user",
+                userId: "user1",
+                deletedAt: null
+            }
+        });
     });
 
     test("debe eliminar categoría", async () => {
 
-        prisma.category.findFirst
-            .mockResolvedValueOnce({
-                id: "cat1"
-            })
-            .mockResolvedValueOnce(null);
+        prisma.category.findFirst.mockResolvedValueOnce({
+            id: "cat1",
+            userId: "user1",
+            deletedAt: null
+        });
 
-        prisma.category.delete.mockResolvedValue({
-            id: "cat1"
+        prisma.category.update.mockResolvedValue({
+            id: "cat1",
+            deletedAt: new Date()
         });
 
         const result =
@@ -286,5 +373,50 @@ describe("deleteCategory", () => {
             );
 
         expect(result.id).toBe("cat1");
+        expect(prisma.category.update).toHaveBeenCalledWith({
+            where: {
+                id: "cat1"
+            },
+            data: {
+                deletedAt: expect.any(Date)
+            }
+        });
+    });
+
+    test("debe eliminar categoría con productos eliminados", async () => {
+
+        prisma.category.findFirst.mockResolvedValueOnce({
+            id: "cat1",
+            userId: "user1"
+        });
+
+        prisma.product.findFirst.mockResolvedValue(null);
+
+        prisma.category.update.mockResolvedValue({
+            id: "cat1",
+            deletedAt: new Date()
+        });
+
+        const result = await categoryService.deleteCategory(
+            "user1",
+            "cat1"
+        );
+
+        expect(result.id).toBe("cat1");
+        expect(prisma.category.update).toHaveBeenCalledWith({
+            where: {
+                id: "cat1"
+            },
+            data: {
+                deletedAt: expect.any(Date)
+            }
+        });
+        expect(prisma.product.findFirst).toHaveBeenCalledWith({
+            where: {
+                categoryId: "cat1",
+                userId: "user1",
+                deletedAt: null
+            }
+        });
     });
 });

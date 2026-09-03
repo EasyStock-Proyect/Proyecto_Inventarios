@@ -291,7 +291,7 @@ function Prediction() {
 
                 <div>
 
-                    <h1>
+                    <h1 className="page-title">
                         Predicción de demanda
                     </h1>
 

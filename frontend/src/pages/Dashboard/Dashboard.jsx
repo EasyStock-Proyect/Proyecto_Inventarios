@@ -115,7 +115,7 @@ function Dashboard() {
 
     return (
         <div className="dashboard-container">
-            <div className="dashboard-heading"><div><h1>Panel principal</h1><p>{new Date().toLocaleDateString("es-CO", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</p></div>{error && <span className="dashboard-error">{error}</span>}</div>
+            <div className="dashboard-heading"><div><h1 className="page-title">Panel principal</h1><p>{new Date().toLocaleDateString("es-CO", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</p></div>{error && <span className="dashboard-error">{error}</span>}</div>
             <section className="dashboard-metrics" aria-label="Métricas del negocio">
                 <MetricCard icon={<ShoppingBag />} tone="green" label="Ventas hoy" value={loading ? "..." : todaySales.length} helper="Transacciones registradas" />
                 <MetricCard icon={<CircleDollarSign />} tone="green" label="Ingresos hoy" value={loading ? "..." : money(todayRevenue)} helper="Total vendido hoy" />

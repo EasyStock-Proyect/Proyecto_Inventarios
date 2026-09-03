@@ -5,7 +5,8 @@ async function getCategories(userId) {
     const categories = await prisma.category.findMany({
 
         where: {
-            userId: userId
+            userId: userId,
+            deletedAt: null
         },
 
         orderBy: {
@@ -48,7 +49,8 @@ async function createCategory(userId, data) {
     const totalCategories = await prisma.category.count({
 
         where: {
-            userId: userId
+            userId: userId,
+            deletedAt: null
         }
 
     });
@@ -63,7 +65,8 @@ async function createCategory(userId, data) {
 
         where: {
             userId: userId,
-            name: data.name.trim()
+            name: data.name.trim(),
+            deletedAt: null
         }
 
     });
@@ -89,11 +92,12 @@ async function createCategory(userId, data) {
 
 async function updateCategory(userId, categoryId, data) {
 
-    const category = await prisma.category.findUnique({
+    const category = await prisma.category.findFirst({
 
         where: {
             id: categoryId,
-            userId
+            userId,
+            deletedAt: null
         }
 
     });
@@ -111,6 +115,7 @@ async function updateCategory(userId, categoryId, data) {
         where: {
             userId,
             name: data.name.trim(),
+            deletedAt: null,
 
             NOT: {
                 id: categoryId
@@ -147,7 +152,8 @@ async function deleteCategory(userId, categoryId) {
 
         where: {
             id: categoryId,
-            userId
+            userId,
+            deletedAt: null
         }
 
     });
@@ -160,7 +166,8 @@ async function deleteCategory(userId, categoryId) {
 
         where: {
             categoryId: categoryId,
-            userId
+            userId,
+            deletedAt: null
         }
 
     });
@@ -172,10 +179,14 @@ async function deleteCategory(userId, categoryId) {
     }
 
 
-    const deletedCategory = await prisma.category.delete({
+    const deletedCategory = await prisma.category.update({
 
         where: {
             id: categoryId
+        },
+
+        data: {
+            deletedAt: new Date()
         }
 
     });

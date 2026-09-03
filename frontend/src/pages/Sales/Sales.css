@@ -31,8 +31,6 @@
 .section-heading h2 {
     margin: 0 0 4px;
     color: #111111;
-    font-size: 30px;
-    font-weight: 600;
 }
 
 .section-heading p {
@@ -58,7 +56,6 @@
 
 .history-header h2 {
     margin: 0 0 4px;
-    font-size: 30px;
 }
 
 .history-header p {
@@ -228,9 +225,8 @@
 
 @media (max-width: 768px) {
     .sales-page {
-        width: 100%;
-        margin: 0;
-        min-height: auto;
+        width: calc(100% + 40px);
+        margin: 0 -20px;
     }
 }
 
@@ -241,10 +237,6 @@
 
     .sales-header {
         padding: 0 14px;
-    }
-
-    .section-heading h2 {
-        font-size: 19px;
     }
 
         .sales-history-filters {
