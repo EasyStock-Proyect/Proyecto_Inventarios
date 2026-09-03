@@ -226,7 +226,7 @@
 @media (max-width: 768px) {
     .sales-page {
         width: calc(100% + 40px);
-        margin: 0 -20px;
+        margin: -20px -20px 0;
     }
 }
 
