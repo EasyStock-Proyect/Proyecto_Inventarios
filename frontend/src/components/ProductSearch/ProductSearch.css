@@ -44,11 +44,11 @@
     color: #777777;
 }
 
-.voice-button {
-    width: 30px;
-    height: 30px;
+.clear-search-button {
+    width: 40px;
+    height: 40px;
 
-    flex: 0 0 30px;
+    flex: 0 0 40px;
 
     display: flex;
     align-items: center;
@@ -65,6 +65,6 @@
     cursor: pointer;
 }
 
-.voice-button:hover {
+.clear-search-button:hover {
     color: #176b27;
 }

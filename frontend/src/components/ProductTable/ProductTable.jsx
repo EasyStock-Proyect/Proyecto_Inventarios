@@ -5,7 +5,7 @@ import CategoryManagementModal from "../CategoryManagementModal/CategoryManageme
 
 import {
     Search,
-    Mic,
+    X,
     TriangleAlert,
     Trash2,
     Pencil,
@@ -71,6 +71,7 @@ function ProductTable() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const requestIdRef = useRef(0);
+    const searchInputRef = useRef(null);
 
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [productToDelete, setProductToDelete] = useState(null);
@@ -285,6 +286,12 @@ function ProductTable() {
         setPage(1);
 
     };
+
+    const handleClearSearch = () => {
+        setSearch("");
+        setPage(1);
+        searchInputRef.current?.focus();
+    };
     const handleCategoryChange = (id) => {
 
         setCategoryId(id);
@@ -364,15 +371,22 @@ function ProductTable() {
 
                 <input
                     type="text"
+                    ref={searchInputRef}
                     placeholder="Buscar por nombre o SKU..."
                     value={search}
                     onChange={handleSearch}
                 />
 
-                <Mic
-                    className="microphone-icon"
-                    size={17}
-                />
+                {search && (
+                    <button
+                        type="button"
+                        className="clear-search-button"
+                        aria-label="Limpiar búsqueda"
+                        onClick={handleClearSearch}
+                    >
+                        <X size={19} />
+                    </button>
+                )}
 
             </div>
 

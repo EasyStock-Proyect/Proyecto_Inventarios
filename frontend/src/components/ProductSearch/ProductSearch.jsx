@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
-import { FiMic, FiSearch } from "react-icons/fi";
+import { useEffect, useRef, useState } from "react";
+import { FiSearch, FiX } from "react-icons/fi";
 
 import "./ProductSearch.css";
 
 function ProductSearch({ onSearch }) {
     const [search, setSearch] = useState("");
+    const inputRef = useRef(null);
 
     useEffect(() => {
         const timeout = setTimeout(() => {
@@ -16,6 +17,11 @@ function ProductSearch({ onSearch }) {
         };
     }, [search, onSearch]);
 
+    const handleClear = () => {
+        setSearch("");
+        inputRef.current?.focus();
+    };
+
     return (
         <div className="product-search">
 
@@ -26,6 +32,7 @@ function ProductSearch({ onSearch }) {
 
             <input
                 type="text"
+                ref={inputRef}
                 value={search}
                 onChange={(event) =>
                     setSearch(event.target.value)
@@ -34,13 +41,16 @@ function ProductSearch({ onSearch }) {
                 aria-label="Buscar producto por nombre o SKU"
             />
 
-            <button
-                type="button"
-                className="voice-button"
-                aria-label="Búsqueda por voz"
-            >
-                <FiMic size={19} />
-            </button>
+            {search && (
+                <button
+                    type="button"
+                    className="clear-search-button"
+                    aria-label="Limpiar búsqueda"
+                    onClick={handleClear}
+                >
+                    <FiX size={19} />
+                </button>
+            )}
 
         </div>
     );
