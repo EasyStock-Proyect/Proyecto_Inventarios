@@ -1,6 +1,7 @@
 import {
     useCallback,
     useEffect,
+    useRef,
     useState
 } from "react";
 
@@ -26,9 +27,17 @@ import {
 } from "../../services/product.service";
 
 import {
+    getCategories
+} from "../../services/category.service";
+
+import {
     createSale,
     getSales
 } from "../../services/sale.service";
+import {
+    filterAndRankProducts,
+    normalizeText
+} from "../../utils/productSearch";
 
 function Sales() {
     const [loadingHistory, setLoadingHistory] = useState(false);
@@ -68,7 +77,11 @@ function Sales() {
     const [activeTab, setActiveTab] = useState("new");
 
     const [products, setProducts] = useState([]);
+    const [categories, setCategories] = useState([]);
+    const [search, setSearch] = useState("");
+    const [categoryId, setCategoryId] = useState("");
     const [cart, setCart] = useState([]);
+    const productsRequestId = useRef(0);
 
     const [page, setPage] = useState(1);
     const [pagination, setPagination] = useState({
@@ -133,7 +146,9 @@ function Sales() {
 
 
     const searchProducts = useCallback(
-        async (search = "") => {
+        async () => {
+            const requestId = productsRequestId.current + 1;
+            productsRequestId.current = requestId;
 
             try {
 
@@ -142,18 +157,34 @@ function Sales() {
                 const response = await getProducts({
                     page,
                     limit: productsPerPage,
-                    search
+                    search,
+                    categoryId
                 });
 
+                if (requestId !== productsRequestId.current) {
+                    return;
+                }
+
                 setProducts(
-                    normalizeProducts(response)
+                    filterAndRankProducts(
+                        normalizeProducts(response),
+                        search
+                    )
                 );
 
                 setPagination(
-                    response.pagination
+                    response.pagination || {
+                        page: 1,
+                        total: 0,
+                        totalPages: 1
+                    }
                 );
 
             } catch (error) {
+
+                if (requestId !== productsRequestId.current) {
+                    return;
+                }
 
                 console.error(
                     "Error buscando productos:",
@@ -164,12 +195,14 @@ function Sales() {
 
             } finally {
 
-                setLoadingProducts(false);
+                if (requestId === productsRequestId.current) {
+                    setLoadingProducts(false);
+                }
 
             }
 
         },
-        [page, productsPerPage]
+        [page, productsPerPage, search, categoryId]
     );
 
 
@@ -217,7 +250,7 @@ function Sales() {
     useEffect(() => {
 
         const timeout = setTimeout(() => {
-            searchProducts("");
+            searchProducts();
         }, 0);
 
         return () => {
@@ -225,6 +258,29 @@ function Sales() {
         };
 
     }, [searchProducts]);
+
+    useEffect(() => {
+        const loadCategories = async () => {
+            try {
+                const response = await getCategories();
+                setCategories(Array.isArray(response) ? response : []);
+            } catch (error) {
+                console.error("Error cargando categorías:", error);
+            }
+        };
+
+        void loadCategories();
+    }, []);
+
+    const handleProductSearch = useCallback((value) => {
+        setSearch(normalizeText(value));
+        setPage(1);
+    }, []);
+
+    const handleCategoryChange = useCallback((value) => {
+        setCategoryId(value);
+        setPage(1);
+    }, []);
 
     useEffect(() => {
 
@@ -448,7 +504,8 @@ function Sales() {
 
             setCart([]);
 
-            await searchProducts("");
+            setSearch("");
+            setPage(1);
 
             await loadSalesHistory();
 
@@ -582,8 +639,40 @@ function Sales() {
 
 
                         <ProductSearch
-                            onSearch={searchProducts}
+                            onSearch={handleProductSearch}
                         />
+
+                        <div className="sales-category-filters">
+                            <button
+                                type="button"
+                                className={
+                                    categoryId === ""
+                                        ? "sales-category-button active"
+                                        : "sales-category-button"
+                                }
+                                onClick={() => handleCategoryChange("")}
+                            >
+                                {categoryId === "" && "✓ "}
+                                Todos
+                            </button>
+
+                            {categories.map((category) => (
+                                <button
+                                    type="button"
+                                    key={category.id}
+                                    className={
+                                        categoryId === category.id
+                                            ? "sales-category-button active"
+                                            : "sales-category-button"
+                                    }
+                                    onClick={() =>
+                                        handleCategoryChange(category.id)
+                                    }
+                                >
+                                    {category.name}
+                                </button>
+                            ))}
+                        </div>
 
 
                         <ProductList

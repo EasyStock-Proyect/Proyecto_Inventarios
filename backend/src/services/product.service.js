@@ -1,4 +1,5 @@
 const prisma = require ("../config/prisma");
+const { matchesSearch } = require("../utils/productSearch");
 
 async function generateSku(userId, categoryId) {
 
@@ -169,43 +170,15 @@ async function getProducts(userId, query) {
         deletedAt: null,
     };
 
-    if (search) {
-
-        where.OR = [
-            {
-                name: {
-                    contains: search,
-                    mode: "insensitive"
-                }
-            },
-            {
-                sku: {
-                    contains: search,
-                    mode: "insensitive"
-                }
-            }
-        ];
-
-    }
-
     if (categoryId) {
 
         where.categoryId = categoryId;
 
     }
 
-    const products = await prisma.product.findMany({
-
+    const candidates = await prisma.product.findMany({
         where,
-
-        skip: (page - 1) * limit,
-
-        take: limit,
-
-        orderBy: {
-            name: "asc"
-        },
-
+        orderBy: { name: "asc" },
         include: {
             category: {
                 select: {
@@ -214,12 +187,17 @@ async function getProducts(userId, query) {
                 }
             }
         }
-
     });
 
-    const total = await prisma.product.count({
-        where
-    });
+    const filteredProducts = search
+        ? candidates.filter((product) => matchesSearch(product, search))
+        : candidates;
+
+    const total = filteredProducts.length;
+    const products = filteredProducts.slice(
+        (page - 1) * limit,
+        page * limit
+    );
 
     return {
         data: products,

@@ -39,6 +39,40 @@
     font-size: 15px;
 }
 
+.sales-category-filters {
+    display: flex;
+    gap: 8px;
+    margin: 0 0 24px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+}
+
+.sales-category-button {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    border: 1px solid #d6d6d6;
+    background: transparent;
+    border-radius: 20px;
+    padding: 7px 15px;
+    font-size: 14px;
+    color: #333;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: 0.2s;
+}
+
+.sales-category-button:hover {
+    background: #edf6e9;
+}
+
+.sales-category-button.active {
+    background: #d7ecd0;
+    border-color: #2e7d32;
+    color: #155d20;
+    font-weight: 500;
+}
+
 /* Historial */
 
 .history-section {
@@ -248,5 +282,9 @@
     .sales-filter-button,
     .sales-clear-filter-button {
         width: 100%;
+    }
+
+    .sales-category-filters {
+        margin-bottom: 15px;
     }
 }

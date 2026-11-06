@@ -1,5 +1,8 @@
 .topbar {
-    height: 64px;
+    height: calc(64px + env(safe-area-inset-top));
+    position: sticky;
+    top: 0;
+    z-index: 100;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -7,6 +10,8 @@
     background: var(--muted);
     border-bottom: 1px solid var(--border);
     flex-shrink: 0;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top);
 }
 
 .topbar-title{
