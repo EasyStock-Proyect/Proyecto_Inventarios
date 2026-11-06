@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import StockAdjustmentModal from "../StockAdjustmentModal/StockAdjustmentModal";
 import CategoryManagementModal from "../CategoryManagementModal/CategoryManagementModal";
@@ -25,6 +25,7 @@ import "./ProductTable.css";
 
 import ProductFormModal from "../ProductFormModal/ProductFormModal";
 import ConfirmDialog from "../ConfirmDialog/ConfirmDialog";
+import { filterAndRankProducts, normalizeText } from "../../utils/productSearch";
 
 
 function ProductTable() {
@@ -69,6 +70,7 @@ function ProductTable() {
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const requestIdRef = useRef(0);
 
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [productToDelete, setProductToDelete] = useState(null);
@@ -99,6 +101,8 @@ function ProductTable() {
     };
 
     const loadProducts = useCallback(async () => {
+        const requestId = requestIdRef.current + 1;
+        requestIdRef.current = requestId;
 
         try {
 
@@ -112,10 +116,24 @@ function ProductTable() {
                 categoryId
             });
 
-            setProducts(response.data);
-            setPagination(response.pagination);
+            if (requestId !== requestIdRef.current) {
+                return;
+            }
+
+            setProducts(
+                filterAndRankProducts(response.data || [], search)
+            );
+            setPagination(response.pagination || {
+                page: 1,
+                total: 0,
+                totalPages: 1
+            });
 
         } catch (error) {
+
+            if (requestId !== requestIdRef.current) {
+                return;
+            }
 
             console.error(error);
 
@@ -126,7 +144,9 @@ function ProductTable() {
 
         } finally {
 
-            setLoading(false);
+            if (requestId === requestIdRef.current) {
+                setLoading(false);
+            }
 
         }
 
@@ -260,7 +280,7 @@ function ProductTable() {
 
     const handleSearch = (event) => {
 
-        setSearch(event.target.value);
+        setSearch(normalizeText(event.target.value));
 
         setPage(1);
 
