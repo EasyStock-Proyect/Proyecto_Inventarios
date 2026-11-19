@@ -1,5 +1,6 @@
 const express = require("express");
 const routes = require("./routes");
+const productRoutes = require("./routes/product.routes");
 const cors = require("cors");
 const errorMilddleware = require("./middlewares/error.middleware");
 const cookieParser = require("cookie-parser");
@@ -22,6 +23,7 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 app.use("/api", routes);
+app.use("/products", productRoutes);
 
 const openApiPath = path.join(
     __dirname,

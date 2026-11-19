@@ -166,6 +166,61 @@ async function generateSku(req, res, next) {
 
 }
 
+async function importProductsFromExcel(req, res) {
+    try {
+        const file = req.file || (req.files && req.files[0]);
+
+        if (!file) {
+            return res.status(400).json({
+                message: "No se proporcionó ningún archivo."
+            });
+        }
+
+        const result = await productService.importProductsFromExcel(
+            req.user.id,
+            file
+        );
+
+        res.status(200).json(result);
+    } catch (error) {
+        const status = error.status || 400;
+        const responseData = {
+            message: error.message
+        };
+
+        if (error.errors) {
+            responseData.errors = error.errors;
+        }
+
+        if (error.details) {
+            responseData.details = error.details;
+        }
+
+        res.status(status).json(responseData);
+    }
+}
+
+async function downloadExcelTemplate(req, res) {
+    try {
+        const buffer = productService.generateExcelTemplate();
+
+        res.setHeader(
+            "Content-Type",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        );
+        res.setHeader(
+            "Content-Disposition",
+            "attachment; filename=plantilla_productos.xlsx"
+        );
+
+        res.send(buffer);
+    } catch (error) {
+        res.status(500).json({
+            message: error.message
+        });
+    }
+}
+
 module.exports = {
     createProduct,
     getProducts,
@@ -173,5 +228,7 @@ module.exports = {
     deleteProduct,
     adjustStock,
     getStockAdjustments,
-    generateSku
+    generateSku,
+    importProductsFromExcel,
+    downloadExcelTemplate
 };

@@ -67,3 +67,36 @@ export const generateSku = async (categoryId) => {
 
 };
 
+export const importProductsFromExcel = async (file) => {
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await api.post(
+        "/products/import-excel",
+        formData,
+        {
+            headers: {
+                "Content-Type": "multipart/form-data"
+            }
+        }
+    );
+
+    return response.data;
+
+};
+
+export const downloadExcelTemplate = async () => {
+
+    const response = await api.get(
+        "/products/import-excel/template",
+        {
+            responseType: "blob"
+        }
+    );
+
+    return response.data;
+
+};
+
+
