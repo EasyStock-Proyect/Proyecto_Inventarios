@@ -5,7 +5,9 @@ jest.mock("../src/services/product.service", () => ({
     deleteProduct: jest.fn(),
     adjustStock: jest.fn(),
     getStockAdjustments: jest.fn(),
-    generateSku: jest.fn()
+    generateSku: jest.fn(),
+    importProductsFromExcel: jest.fn(),
+    generateExcelTemplate: jest.fn()
 }));
 
 const productService =
@@ -334,5 +336,114 @@ describe("product.controller", () => {
         await controller.generateSku(req, res, next);
 
         expect(next).toHaveBeenCalledWith(error);
+    });
+
+    test("importProductsFromExcel debe retornar 400 si no hay archivo", async () => {
+        const req = {
+            user: { id: "user1" }
+        };
+        const res = mockResponse();
+
+        await controller.importProductsFromExcel(req, res);
+
+        expect(res.status).toHaveBeenCalledWith(400);
+        expect(res.json).toHaveBeenCalledWith({
+            message: "No se proporcionó ningún archivo."
+        });
+    });
+
+    test("importProductsFromExcel debe retornar 200 con resultado exitoso", async () => {
+        const req = {
+            user: { id: "user1" },
+            file: { originalname: "test.xlsx", buffer: Buffer.from("data") }
+        };
+        const res = mockResponse();
+
+        productService.importProductsFromExcel.mockResolvedValue({
+            created_products: 5,
+            created_categories: 2,
+            createdProducts: 5,
+            createdCategories: 2
+        });
+
+        await controller.importProductsFromExcel(req, res);
+
+        expect(res.status).toHaveBeenCalledWith(200);
+        expect(res.json).toHaveBeenCalledWith({
+            created_products: 5,
+            created_categories: 2,
+            createdProducts: 5,
+            createdCategories: 2
+        });
+    });
+
+    test("importProductsFromExcel debe retornar 422 con errores si la validación falla", async () => {
+        const req = {
+            user: { id: "user1" },
+            file: { originalname: "test.xlsx", buffer: Buffer.from("data") }
+        };
+        const res = mockResponse();
+
+        const valError = new Error("Errores de validación");
+        valError.status = 422;
+        valError.errors = [{ row: 2, field: "precio", message: "inválido" }];
+        valError.details = ["Fila 2: inválido"];
+
+        productService.importProductsFromExcel.mockRejectedValue(valError);
+
+        await controller.importProductsFromExcel(req, res);
+
+        expect(res.status).toHaveBeenCalledWith(422);
+        expect(res.json).toHaveBeenCalledWith({
+            message: "Errores de validación",
+            errors: valError.errors,
+            details: valError.details
+        });
+    });
+
+    test("downloadExcelTemplate debe enviar el buffer con headers correctos", async () => {
+        const req = {};
+        const res = {
+            setHeader: jest.fn(),
+            send: jest.fn(),
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn()
+        };
+
+        const mockBuffer = Buffer.from("fake-excel-data");
+        productService.generateExcelTemplate.mockReturnValue(mockBuffer);
+
+        await controller.downloadExcelTemplate(req, res);
+
+        expect(res.setHeader).toHaveBeenCalledWith(
+            "Content-Type",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        );
+        expect(res.setHeader).toHaveBeenCalledWith(
+            "Content-Disposition",
+            "attachment; filename=plantilla_productos.xlsx"
+        );
+        expect(res.send).toHaveBeenCalledWith(mockBuffer);
+    });
+
+    test("downloadExcelTemplate debe retornar 500 en caso de error", async () => {
+        const req = {};
+        const res = {
+            setHeader: jest.fn(),
+            send: jest.fn(),
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn()
+        };
+
+        productService.generateExcelTemplate.mockImplementation(() => {
+            throw new Error("Template failure");
+        });
+
+        await controller.downloadExcelTemplate(req, res);
+
+        expect(res.status).toHaveBeenCalledWith(500);
+        expect(res.json).toHaveBeenCalledWith({
+            message: "Template failure"
+        });
     });
 });

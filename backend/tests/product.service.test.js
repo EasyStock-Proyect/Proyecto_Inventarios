@@ -2,6 +2,7 @@ jest.mock("../src/config/prisma", () => ({
     category: {
         findFirst: jest.fn(),
         findMany: jest.fn(),
+        create: jest.fn(),
     },
     product: {
         findFirst: jest.fn(),
@@ -19,6 +20,7 @@ jest.mock("../src/config/prisma", () => ({
 }));
 
 const prisma = require("../src/config/prisma");
+const xlsx = require("xlsx");
 const productService = require("../src/services/product.service");
 
 beforeEach(() => {
@@ -900,5 +902,171 @@ describe("getStockAdjustments", () => {
 
         expect(result.pagination.page).toBe(2);
         expect(result.pagination.limit).toBe(5);
+    });
+});
+
+describe("generateExcelTemplate", () => {
+    test("debe retornar un buffer de Excel válido", () => {
+        const buffer = productService.generateExcelTemplate();
+        expect(Buffer.isBuffer(buffer)).toBe(true);
+
+        const workbook = xlsx.read(buffer, { type: "buffer" });
+        expect(workbook.SheetNames).toContain("Productos");
+        const sheet = workbook.Sheets["Productos"];
+        const rows = xlsx.utils.sheet_to_json(sheet);
+        expect(rows.length).toBe(1);
+        expect(rows[0].nombre).toBe("Arroz Diana 1kg");
+        expect(rows[0].categoria).toBe("Granos");
+        expect(rows[0].precio).toBe(4500);
+        expect(rows[0].stock_inicial).toBe(50);
+        expect(rows[0].stock_minimo).toBe(10);
+    });
+});
+
+describe("importProductsFromExcel", () => {
+    function createMockBuffer(rows) {
+        const ws = xlsx.utils.json_to_sheet(rows);
+        const wb = xlsx.utils.book_new();
+        xlsx.utils.book_append_sheet(wb, ws, "Sheet1");
+        return xlsx.write(wb, { type: "buffer", bookType: "xlsx" });
+    }
+
+    test("debe fallar si no se envía archivo", async () => {
+        await expect(
+            productService.importProductsFromExcel("user1", null)
+        ).rejects.toThrow("No se proporcionó ningún archivo.");
+    });
+
+    test("debe fallar si la extensión no es .xlsx o .xls", async () => {
+        const file = {
+            originalname: "archivo.txt",
+            buffer: Buffer.from("texto plano")
+        };
+
+        await expect(
+            productService.importProductsFromExcel("user1", file)
+        ).rejects.toThrow("El archivo debe ser un formato Excel válido (.xlsx o .xls).");
+    });
+
+    test("debe fallar si el archivo no contiene filas", async () => {
+        const wb = xlsx.utils.book_new();
+        const ws = xlsx.utils.json_to_sheet([]);
+        xlsx.utils.book_append_sheet(wb, ws, "Sheet1");
+        const buffer = xlsx.write(wb, { type: "buffer", bookType: "xlsx" });
+
+        const file = {
+            originalname: "vacio.xlsx",
+            buffer
+        };
+
+        await expect(
+            productService.importProductsFromExcel("user1", file)
+        ).rejects.toThrow("El archivo no contiene filas de datos para importar.");
+    });
+
+    test("debe retornar 422 con errores detallados por fila", async () => {
+        const rows = [
+            {
+                nombre: "",
+                categoria: "Bebidas",
+                precio: 1000,
+                stock_inicial: 5,
+                stock_minimo: 1
+            },
+            {
+                nombre: "Gaseosa",
+                categoria: "",
+                precio: -10,
+                stock_inicial: "no-numero",
+                stock_minimo: -2
+            }
+        ];
+
+        const file = {
+            originalname: "invalidos.xlsx",
+            buffer: createMockBuffer(rows)
+        };
+
+        let thrownError;
+        try {
+            await productService.importProductsFromExcel("user1", file);
+        } catch (error) {
+            thrownError = error;
+        }
+
+        expect(thrownError).toBeDefined();
+        expect(thrownError.status).toBe(422);
+        expect(thrownError.errors.length).toBeGreaterThanOrEqual(4);
+
+        const row2Errors = thrownError.errors.filter((e) => e.row === 2);
+        expect(row2Errors).toHaveLength(1);
+        expect(row2Errors[0].field).toBe("nombre");
+
+        const row3Errors = thrownError.errors.filter((e) => e.row === 3);
+        expect(row3Errors.length).toBeGreaterThanOrEqual(3);
+    });
+
+    test("debe importar productos exitosamente creando categorías y generando SKU", async () => {
+        const rows = [
+            {
+                nombre: "Coca Cola 1.5L",
+                categoria: "Bebidas",
+                precio: 4000,
+                stock_inicial: 20,
+                stock_minimo: 5
+            },
+            {
+                nombre: "Pepsi 1.5L",
+                categoria: "Bebidas",
+                precio: 3500,
+                stock_inicial: 15
+            },
+            {
+                nombre: "Lentejas 500g",
+                categoria: "Granos",
+                precio: 2500,
+                stock_inicial: 30,
+                stock_minimo: 2
+            }
+        ];
+
+        const file = {
+            originalname: "productos.xlsx",
+            buffer: createMockBuffer(rows)
+        };
+
+        prisma.$transaction.mockImplementation(async (callback) => {
+            const fakeTx = {
+                category: {
+                    findMany: jest.fn().mockResolvedValue([
+                        { id: "cat-bebidas", name: "Bebidas" }
+                    ]),
+                    create: jest.fn().mockImplementation(async ({ data }) => ({
+                        id: `cat-${data.name.toLowerCase()}`,
+                        name: data.name
+                    }))
+                },
+                product: {
+                    findMany: jest.fn().mockImplementation(async ({ where }) => {
+                        if (where.categoryId === "cat-bebidas") {
+                            return [{ sku: "BEB-0002" }];
+                        }
+                        return [];
+                    }),
+                    create: jest.fn().mockImplementation(async ({ data }) => ({
+                        id: `prod-${Date.now()}`,
+                        ...data
+                    }))
+                }
+            };
+
+            return await callback(fakeTx);
+        });
+
+        const result = await productService.importProductsFromExcel("user1", file);
+
+        expect(result.created_products).toBe(3);
+        expect(result.created_categories).toBe(1);
+        expect(prisma.$transaction).toHaveBeenCalledTimes(1);
     });
 });

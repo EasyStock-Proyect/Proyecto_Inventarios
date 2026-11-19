@@ -35,6 +35,13 @@
 }
 
 
+.inventory-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
 .manage-categories-button {
     display: inline-flex;
     align-items: center;
@@ -367,6 +374,10 @@
     .inventory-title-row {
         align-items: flex-start;
         gap: 10px;
+    }
+
+    .inventory-header-actions {
+        gap: 6px;
     }
 
     .manage-categories-button {

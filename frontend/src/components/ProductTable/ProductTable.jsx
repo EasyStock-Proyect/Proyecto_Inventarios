@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import StockAdjustmentModal from "../StockAdjustmentModal/StockAdjustmentModal";
 import CategoryManagementModal from "../CategoryManagementModal/CategoryManagementModal";
+import ImportExcelModal from "../ImportExcelModal/ImportExcelModal";
 
 import {
     Search,
@@ -14,7 +15,8 @@ import {
     ChevronLeft,
     ChevronRight,
     Plus,
-    Settings2
+    Settings2,
+    FileSpreadsheet
 } from "lucide-react";
 
 import { getProducts } from "../../services/product.service";
@@ -32,6 +34,7 @@ function ProductTable() {
 
     const [productModalOpen, setProductModalOpen] = useState(false);
     const [categoryModalOpen, setCategoryModalOpen] = useState(false);
+    const [importExcelModalOpen, setImportExcelModalOpen] = useState(false);
 
     const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState([]);
@@ -346,17 +349,25 @@ function ProductTable() {
 
                     </div>
 
-                    <button
-                        type="button"
-                        className="manage-categories-button"
-                        onClick={() => setCategoryModalOpen(true)}
-                    >
+                    <div className="inventory-header-actions">
+                        <button
+                            type="button"
+                            className="manage-categories-button"
+                            onClick={() => setImportExcelModalOpen(true)}
+                        >
+                            <FileSpreadsheet size={16} />
+                            Importar Excel
+                        </button>
 
-                        <Settings2 size={16} />
-
-                        Gestionar categorías
-
-                    </button>
+                        <button
+                            type="button"
+                            className="manage-categories-button"
+                            onClick={() => setCategoryModalOpen(true)}
+                        >
+                            <Settings2 size={16} />
+                            Gestionar categorías
+                        </button>
+                    </div>
 
                 </div>
 
@@ -812,6 +823,15 @@ function ProductTable() {
 
                     }
 
+                }}
+            />
+
+            <ImportExcelModal
+                open={importExcelModalOpen}
+                onClose={() => setImportExcelModalOpen(false)}
+                onSuccess={async () => {
+                    await loadProducts();
+                    await loadCategories();
                 }}
             />
 
